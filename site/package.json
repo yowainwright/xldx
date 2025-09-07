@@ -4,17 +4,17 @@
   "version": "0.0.0",
   "scripts": {
     "test": "echo 'add me'",
-    "build": "astro build",
+    "build": "bunx astro build",
     "format": "turbo run format:run",
     "format:run": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,astro}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,astro}\"",
-    "typecheck:run": "astro check && tsc --noEmit",
+    "typecheck:run": "bunx astro check && tsc --noEmit",
     "lint:run": "oxlint .",
     "lint:fix": "oxlint . --fix",
-    "dev": "astro dev",
-    "start": "astro dev",
-    "preview": "astro preview",
-    "astro": "astro"
+    "dev": "bunx astro dev",
+    "start": "bunx astro dev",
+    "preview": "bunx astro preview",
+    "astro": "bunx astro"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.4",
