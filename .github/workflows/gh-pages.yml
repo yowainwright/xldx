@@ -43,8 +43,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-bun-
 
-      - name: Install dependencies
+      - name: Install root dependencies
         run: bun install
+
+      - name: Install site dependencies
+        run: cd site && bun install
 
       - name: Build site
         run: cd site && bun run build
