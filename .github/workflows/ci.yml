@@ -1,0 +1,58 @@
+name: ci
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [24.x]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - uses: oven-sh/setup-bun@v2
+        name: Install Bun
+
+      - name: Get Bun cache directory
+        id: bun-cache
+        run: |
+          echo "bun_cache_dir=$(bun pm cache dir)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v4
+        name: Setup Bun cache
+        with:
+          path: ${{ steps.bun-cache.outputs.bun_cache_dir }}
+          key: ${{ runner.os }}-bun-${{ hashFiles('**/bun.lockb') }}
+          restore-keys: |
+            ${{ runner.os }}-bun-
+
+      - run: bun install
+      - run: bun run build
+        env:
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+      - run: bun run lint
+        env:
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+      - run: bun run test
+        env:
+          CI: true
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+
