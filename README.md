@@ -1,6 +1,6 @@
 # xldx
 
-Excel file builder for TypeScript/JavaScript with zero dependencies.
+JS Excel file builder with zero dependencies.
 
 ## Installation
 
@@ -12,12 +12,12 @@ bun add xldx
 
 ## Features
 
-- 📦 **Zero dependencies** - Pure TypeScript implementation
-- 🎨 Pattern-based styling and theming
-- 📊 Multi-sheet support
-- 🚀 TypeScript first with full type safety
-- 🌐 Works in browsers and Node.js
-- 🎯 < 17KB minified
+- **Zero dependencies**
+- Pattern-based styling and theming
+- Multi-sheet support
+- Full type safety
+- Works in browsers and node, bun, or deno
+- < 17KB minified
 
 ## Quick Start
 
@@ -43,14 +43,14 @@ xlsx.createSheet(
   { key: 'status', header: 'Status', width: 15 }
 );
 
-// Node.js - write to file
+// node, bun, or deno - write to file
 await xlsx.write('users.xlsx');
 
 // Browser - trigger download
 await xlsx.download('users.xlsx');
 
 // Get raw data
-const buffer = await xlsx.toBuffer(); // Node.js Buffer
+const buffer = await xlsx.toBuffer(); // Buffer
 const uint8Array = await xlsx.toUint8Array(); // Uint8Array
 const blob = await xlsx.toBlob(); // Browser Blob
 ```
@@ -113,11 +113,11 @@ new Xldx(data: DataRow[] | SheetsData, options?: XldxOptions)
 - `setTheme(theme: ColorTheme): this` - Set the color theme
 - `createSheet(options: SheetOptions, ...columns: ColumnDefinition[]): this` - Create a new worksheet
 - `createSheets(sheets: Array<{options: SheetOptions; columns: ColumnDefinition[]}>): this` - Create multiple worksheets
-- `toBuffer(): Promise<Buffer>` - Generate Excel file as Buffer (Node.js)
+- `toBuffer(): Promise<Buffer>` - Generate Excel file as Buffer (node, bun, or deno)
 - `toUint8Array(): Promise<Uint8Array>` - Generate Excel file as Uint8Array
 - `toBlob(): Promise<Blob>` - Generate Excel file as Blob (Browser)
 - `download(filename?: string): Promise<void>` - Trigger file download (Browser only)
-- `write(filePath: string): Promise<void>` - Write Excel file to disk (Node.js only)
+- `write(filePath: string): Promise<void>` - Write Excel file to disk (node, bun, or deno only)
 - `toJSON(): any` - Export workbook structure as JSON
 - `static fromJSON(json: any): Xldx` - Create from JSON structure
 - `static read(data: Uint8Array | Buffer): Promise<any>` - Read XLSX file

@@ -3,6 +3,7 @@ import ThemeToggle from "./ThemeToggle.astro";
 import Search from "../docs/Search";
 import { resolveUrl, resolveDocsUrl } from "../../utils/urlResolver";
 import { getSearchData } from "../../utils/searchData";
+import { Target } from 'lucide-react';
 
 interface Props {
   showSearch?: boolean;
@@ -71,7 +72,7 @@ const searchData = await getSearchData();
               navigation.map((item) => (
                 <li>
                   <a
-                    class={`py-2 px-3 hover:text-[#ff4500] hover:bg-[#ff4500]/10 transition flex ${pathname === item.href ? "text-[#ff4500] bg-[#ff4500]/10" : ""}`}
+                    class={`py-2 px-3 hover:text-primary hover:bg-primary/10 transition flex ${pathname === item.href ? "text-primary bg-primary/10" : ""}`}
                     href={item.href}
                   >
                     {item.title}
@@ -84,9 +85,10 @@ const searchData = await getSearchData();
       )}
 
       <a href={resolveUrl("")} class="btn btn-ghost px-1 sm:px-2">
-        <h1 class="flex items-center gap-2">
-          <span class="text-lg sm:text-xl md:text-2xl font-bold text-primary" style="font-family: var(--font-brand);">xldx</span>
-          <span class="text-lg sm:text-xl md:text-2xl">📊</span>
+        <h1 class="flex items-center">
+          <span class="text-lg sm:text-xl md:text-2xl font-bold text-primary relative" style="font-family: var(--font-brand);">
+            xldx<Target className="absolute -top-0.5 -right-3 sm:-right-3.5 md:-right-4 w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-3.5 md:h-3.5 text-primary" />
+          </span>
         </h1>
       </a>
 
@@ -99,7 +101,7 @@ const searchData = await getSearchData();
           navigation.map((item) => (
             <li>
               <a
-                class={`py-2 px-4 hover:text-[#ff4500] hover:bg-[#ff4500]/10 transition flex ${pathname === item.href ? "text-[#ff4500] bg-[#ff4500]/10" : ""}`}
+                class={`py-2 px-4 hover:text-primary hover:bg-primary/10 transition flex ${pathname === item.href ? "text-primary bg-primary/10" : ""}`}
                 href={item.href}
               >
                 {item.title}
@@ -119,7 +121,7 @@ const searchData = await getSearchData();
       
       <a
         class="btn btn-sm btn-ghost btn-square"
-        href="https://github.com/yowainwright/fast-brake"
+        href="https://github.com/yowainwright/xldx"
         aria-label="github"
       >
         <svg

@@ -31,11 +31,11 @@
     if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
       return "night";
     }
-    return "lofi";
+    return "winter";
   })();
 
-  if (theme === "lofi") {
-    document.documentElement.setAttribute("data-theme", "lofi");
+  if (theme === "winter") {
+    document.documentElement.setAttribute("data-theme", "winter");
     document.getElementById("themeToggle").classList.remove("swap-active");
   } else {
     document.documentElement.setAttribute("data-theme", "night");
@@ -47,8 +47,8 @@
   const handleToggleClick = () => {
     const element = document.documentElement;
     const isDark = element.dataset.theme === "night";
-    localStorage.setItem("theme", isDark ? "lofi" : "night");
-    element.setAttribute("data-theme", isDark ? "lofi" : "night");
+    localStorage.setItem("theme", isDark ? "winter" : "night");
+    element.setAttribute("data-theme", isDark ? "winter" : "night");
     if (isDark) {
       document.getElementById("themeToggle").classList.remove("swap-active");
     } else {
