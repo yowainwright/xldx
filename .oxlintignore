@@ -1,0 +1,11 @@
+# Ignore test fixtures - they're meant to test various JS features
+tests/fixtures/
+
+# Ignore build outputs
+dist/
+node_modules/
+coverage/
+*.min.js
+
+# Ignore generated files
+utils/benchmarker/src/results/

@@ -1,0 +1,47 @@
+---
+title: Introduction
+description: "Get started with xldx - Excel file builder for TypeScript/JavaScript"
+---
+
+# Introduction
+
+xldx is a zero-dependency Excel file builder for TypeScript and JavaScript. It provides a simple, type-safe API for creating Excel files with advanced styling and formatting capabilities.
+
+## Features
+
+- 📦 **Zero dependencies** - Pure TypeScript implementation
+- 🎨 **Pattern-based styling** - Apply styles based on cell data patterns
+- 📊 **Multi-sheet support** - Create complex workbooks
+- 🚀 **TypeScript first** - Full type safety and IntelliSense
+- 🌐 **Universal** - Works in browsers and Node.js
+- 🎯 **Small bundle** - < 17KB minified
+
+## Quick Example
+
+```typescript
+import { Xldx } from 'xldx';
+
+const data = [
+  { name: 'Alice', age: 30, city: 'NYC' },
+  { name: 'Bob', age: 25, city: 'LA' }
+];
+
+const xldx = new Xldx(data);
+xldx.createSheet(
+  { name: 'Users' },
+  { key: 'name', header: 'Name' },
+  { key: 'age', header: 'Age' },
+  { key: 'city', header: 'City' }
+);
+
+// Browser
+await xldx.download('users.xlsx');
+
+// Node.js
+await xldx.write('users.xlsx');
+```
+
+## Next Steps
+
+- [Setup Guide](/docs/setup) - Install and configure xldx
+- [API Reference](/docs/api-reference) - Complete API documentation

@@ -1,0 +1,123 @@
+---
+title: API Reference
+description: "Complete API documentation for xldx"
+---
+
+# API Reference
+
+## Constructor
+
+```typescript
+new Xldx(data: DataRow[] | SheetsData, options?: XldxOptions)
+```
+
+Creates a new Xldx instance.
+
+### Parameters
+
+- `data` - Array of data objects or sheet data structure
+- `options` - Optional configuration object
+
+## Methods
+
+### `createSheet()`
+
+```typescript
+createSheet(options: SheetOptions, ...columns: ColumnDefinition[]): this
+```
+
+Creates a new worksheet with specified columns.
+
+### `setTheme()`
+
+```typescript
+setTheme(theme: ColorTheme): this
+```
+
+Sets the color theme for styling.
+
+### `toBuffer()` (Node.js only)
+
+```typescript
+async toBuffer(): Promise<Buffer>
+```
+
+Generates Excel file as a Node.js Buffer.
+
+### `toBlob()` (Browser only)
+
+```typescript
+async toBlob(): Promise<Blob>
+```
+
+Generates Excel file as a Blob.
+
+### `toUint8Array()`
+
+```typescript
+async toUint8Array(): Promise<Uint8Array>
+```
+
+Generates Excel file as Uint8Array.
+
+### `download()` (Browser only)
+
+```typescript
+async download(filename?: string): Promise<void>
+```
+
+Triggers file download in the browser.
+
+### `write()` (Node.js only)
+
+```typescript
+async write(filePath: string): Promise<void>
+```
+
+Writes Excel file to disk.
+
+### `getSheetData()`
+
+```typescript
+getSheetData(sheet: string | number): SheetDataAPI
+```
+
+Returns an API for manipulating sheet data after creation.
+
+## Types
+
+### `ColumnDefinition`
+
+```typescript
+interface ColumnDefinition {
+  key: string;
+  header?: string;
+  width?: number | 'auto';
+  style?: CellStyle;
+  patterns?: {
+    bgColorPattern?: string | PatternFunction;
+    textPattern?: string | PatternFunction;
+  };
+}
+```
+
+### `SheetOptions`
+
+```typescript
+interface SheetOptions {
+  name: string;
+  freezePane?: {
+    row: number;
+    column: number;
+  };
+  showGridLines?: boolean;
+}
+```
+
+## Pattern Functions
+
+xldx includes built-in pattern functions:
+
+- `zebraBg` - Alternating row colors
+- `bgColorBasedOnDiff` - Background color based on value changes
+- `txtColorBasedOnDiff` - Text color based on value changes

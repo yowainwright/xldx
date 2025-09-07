@@ -1,0 +1,36 @@
+{
+  "$schema": "https://turborepo.org/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "build:pkg": {
+      "outputs": ["dist/**"],
+      "inputs": ["src/**/*.ts", "tsconfig.json", "package.json"]
+    },
+    "build": {
+      "dependsOn": ["^build:pkg"],
+      "outputs": ["dist/**"]
+    },
+    "test:run": {
+      "inputs": ["src/**/*.ts", "tests/**/*.ts"]
+    },
+    "test:unit:run": {
+      "inputs": ["src/**/*.ts", "tests/**/*.ts"]
+    },
+    "test:integration:run": {
+      "inputs": ["src/**/*.ts", "tests/**/*.ts"]
+    },
+    "lint:run": {
+      "inputs": ["src/**/*.ts", "tests/**/*.ts"]
+    },
+    "format:run": {
+      "inputs": ["**/*.{ts,tsx,js,jsx,json,md}"]
+    },
+    "typecheck:run": {
+      "inputs": ["src/**/*.ts", "tests/**/*.ts", "tsconfig.json"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    }
+  }
+}

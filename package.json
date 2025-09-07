@@ -1,0 +1,131 @@
+{
+  "name": "xldx",
+  "version": "0.1.0",
+  "description": "A powerful Excel file builder for TypeScript/JavaScript with advanced styling and theming capabilities",
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "browser": "dist/index.global.js",
+  "type": "module",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "browser": "./dist/browser/index.js",
+      "node": {
+        "import": "./dist/server/index.js",
+        "require": "./dist/server/index.cjs"
+      },
+      "default": "./dist/browser/index.js"
+    },
+    "./browser": {
+      "types": "./dist/browser/index.d.ts",
+      "import": "./dist/browser/index.js",
+      "require": "./dist/browser/index.cjs"
+    },
+    "./server": {
+      "types": "./dist/server/index.d.ts",
+      "import": "./dist/server/index.js",
+      "require": "./dist/server/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "turbo run build:pkg",
+    "build:pkg": "bun run clean && bun run build:run",
+    "build:run": "tsup",
+    "clean": "rimraf dist",
+    "commit": "git-cz",
+    "commit-msg": "commitlint --edit $1",
+    "dev": "cd site && bun run dev",
+    "lint": "turbo run lint:run",
+    "lint:run": "oxlint src tests --ignore-pattern='tests/fixtures/*'",
+    "lint:fix": "oxlint src tests --fix",
+    "format": "turbo run format:run",
+    "format:run": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "pre-commit": "lint-staged --quiet && bun run test",
+    "prepublishOnly": "bun run test && bun run build",
+    "preview": "bun run --cwd site preview",
+    "release": "release-it",
+    "test": "turbo run test:run",
+    "test:run": "bun test tests --timeout 5000",
+    "test:all": "bun test tests --timeout 5000",
+    "test:unit": "turbo run test:unit",
+    "test:unit:run": "bun test tests --timeout 5000",
+    "test:integration": "turbo run test:integration",
+    "test:integration:run": "bun test tests --timeout 5000",
+    "test:watch": "bun test --watch tests",
+    "typecheck": "turbo run typecheck:run",
+    "typecheck:run": "tsc --noEmit",
+    "update": "codependence --update && bun install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yowainwright/xldx.git"
+  },
+  "keywords": [
+    "excel",
+    "xlsx",
+    "spreadsheet",
+    "exceljs",
+    "typescript",
+    "javascript",
+    "reports",
+    "data-export",
+    "styling",
+    "theming",
+    "workbook",
+    "worksheet",
+    "table",
+    "data-visualization"
+  ],
+  "author": "Jeff Wainwright <https:jeffry.in> (yowainwright@gmail.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yowainwright/xldx/issues"
+  },
+  "homepage": "https://github.com/yowainwright/xldx",
+  "dependencies": {},
+  "devDependencies": {
+    "@commitlint/cli": "19.8.1",
+    "@commitlint/config-conventional": "19.8.1",
+    "@sinclair/typebox": "^0.34.41",
+    "@types/node": "24.1.0",
+    "codependence": "^1.0.0-1",
+    "husky": "9.1.7",
+    "invert-color": "^2.0.0",
+    "is-ci": "^4.1.0",
+    "lint-staged": "16.1.2",
+    "oxlint": "^1.12.0",
+    "prettier": "3.6.2",
+    "release-it": "19.0.4",
+    "rimraf": "6.0.1",
+    "tslib": "2.8.1",
+    "tsup": "8.5.0",
+    "turbo": "2.5.5",
+    "typescript": "5.8.3"
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "lint-staged": {
+    "src/**/*.ts": [
+      "oxlint --fix",
+      "prettier --write"
+    ],
+    "tests/**/*.ts": [
+      "oxlint --fix",
+      "prettier --write"
+    ]
+  },
+  "release-it": {
+    "git": {
+      "commitMessage": "chore: release"
+    }
+  },
+  "packageManager": "bun@1.1.38"
+}

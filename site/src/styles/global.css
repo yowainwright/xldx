@@ -1,0 +1,110 @@
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes:
+    winter --default,
+    winterDark --prefersdark;
+  
+  theme-winter: {
+    primary: #0EA5E9;
+    primary-content: #FFFFFF;
+    secondary: #F472B6;
+    secondary-content: #4C1D95;
+    accent: #FBBF24;
+    accent-content: #78350F;
+    neutral: #1F2937;
+    neutral-content: #E5E7EB;
+    base-100: #FFFFFF;
+    base-200: #F3F4F6;
+    base-300: #E5E7EB;
+    base-content: #111827;
+    info: #67E8F9;
+    info-content: #164E63;
+    success: #A3E635;
+    success-content: #3F6212;
+    warning: #FACC15;
+    warning-content: #713F12;
+    error: #FCA5A5;
+    error-content: #7F1D1D;
+  }
+  
+  theme-winterDark: {
+    primary: #f15a16;
+    primary-content: #000000;
+    secondary: #0b8d49;
+    secondary-content: #b3e26a;
+    accent: #0440db;
+    accent-content: #87caf0;
+    neutral: #e0d6c8;
+    neutral-content: #111827;
+    base-100: #000000;
+    base-200: #0c0b09;
+    base-300: #1a1814;
+    base-content: #E5E7EB;
+    info: #981706;
+    info-content: #e9b19c;
+    success: #5c19ca;
+    success-content: #c09ded;
+    warning: #0533ea;
+    warning-content: #8ec0ed;
+    error: #035a5a;
+    error-content: #80e2e2;
+  }
+}
+@plugin "@tailwindcss/typography";
+
+@theme {
+  --font-outfit: "Outfit Variable", "sans-serif";
+  --font-xldx: "Inter", "sans-serif";
+  --color-brand-blue: #0EA5E9;
+}
+
+:root {
+  --font-brand: "Inter", sans-serif;
+  --excel-gradient: linear-gradient(135deg, #0EA5E9 0%, #3B82F6 25%, #2563EB 50%, #60A5FA 75%, #0EA5E9 100%);
+  --sheet-gradient: linear-gradient(45deg, #0EA5E9 25%, #F3F4F6 25%, #F3F4F6 50%, #0EA5E9 50%, #0EA5E9 75%, #F3F4F6 75%, #F3F4F6);
+  --primary-blue: #0EA5E9;
+  --primary-gray: #F3F4F6;
+  
+  /* Layout variables for docs navigation */
+  --header-height: 4rem;
+  --sidebar-width: 20rem;
+  --footer-height: 4rem;
+  --nav-z-index: 50;
+}
+
+
+
+/* Docs layout footer positioning */
+.drawer.lg\\:drawer-open ~ footer {
+  margin-left: 20rem;
+  width: calc(100% - 20rem);
+}
+
+/* Mobile responsive improvements */
+@media (max-width: 1024px) {
+  .drawer.lg\\:drawer-open ~ footer {
+    margin-left: 0;
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  /* Ensure code blocks are scrollable on mobile */
+  pre {
+    max-width: calc(100vw - 2rem);
+    overflow-x: auto;
+  }
+  
+  /* Improve mockup-code on mobile */
+  .mockup-code {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  
+  /* Ensure tables are scrollable */
+  .prose table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+}
