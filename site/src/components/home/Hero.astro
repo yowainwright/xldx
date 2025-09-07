@@ -1,6 +1,7 @@
 ---
 import { CopyButton } from "../common/CopyButton";
 import { resolveDocsUrl } from "../../utils/urlResolver";
+import { Target } from 'lucide-react';
 const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL : import.meta.env.BASE_URL + '/';
 ---
 
@@ -32,14 +33,14 @@ const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL :
   <div class="hero-content text-center min-h-[30rem] md:min-h-[40rem] font-outfit px-4 py-12 lg:py-20">
     <div class="max-w-2xl md:max-w-6xl w-full">
       <h1 class="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black leading-tight" style="font-family: var(--font-brand);">
-        <span class="text-primary">xldx</span> <span class="text-4xl sm:text-5xl md:text-6xl lg:text-8xl">📊</span>
+        <span class="text-primary relative">xldx<Target className="absolute -top-1 -right-6 sm:-right-8 md:-right-10 lg:-right-12 w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 text-primary" /></span>
         <br/>
-        <span class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal" style="font-family: var(--font-outfit);">Excel File Builder for TypeScript</span>
+        <span class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-normal" style="font-family: var(--font-outfit);">JS Excel File Builder</span>
       </h1>
       <div class="flex justify-center items-center">
         <p class="mt-4 sm:mt-6 mb-6 sm:mb-8 max-w-4xl text-base sm:text-lg md:text-xl lg:text-2xl px-2">
           Create Excel files with advanced styling, theming, and pattern-based formatting.
-          Zero dependencies, TypeScript-first, works in browsers and Node.js.
+          Zero dependencies, works in browsers and in bun, node, and deno.
         </p>
       </div>
       <div class="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-5 w-full max-w-lg mx-auto">

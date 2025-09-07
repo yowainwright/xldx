@@ -38,7 +38,7 @@
     "clean": "rimraf dist",
     "commit": "git-cz",
     "commit-msg": "commitlint --edit $1",
-    "dev": "cd site && bun run dev",
+    "dev": "cd site && bunx astro dev",
     "lint": "turbo run lint:run",
     "lint:run": "oxlint src test",
     "lint:fix": "oxlint src test --fix",

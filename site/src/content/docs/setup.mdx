@@ -3,14 +3,15 @@ title: Setup
 description: "Install and configure xldx in your project"
 ---
 
+import CodeBlock from '../../components/docs/CodeBlock.astro';
+
 # Setup
 
 ## Installation
 
 Install xldx using your preferred package manager:
 
-```bash
-# npm
+<CodeBlock code={`# npm
 npm install xldx
 
 # bun
@@ -20,13 +21,11 @@ bun add xldx
 yarn add xldx
 
 # pnpm
-pnpm add xldx
-```
+pnpm add xldx`} lang="bash" />
 
 ## Browser Usage
 
-```typescript
-import { Xldx } from 'xldx/browser';
+<CodeBlock code={`import { Xldx } from 'xldx/browser';
 
 const data = [
   { id: 1, name: 'Item 1', value: 100 },
@@ -45,13 +44,11 @@ xldx.createSheet(
 await xldx.download('data.xlsx');
 
 // Or get as Blob
-const blob = await xldx.toBlob();
-```
+const blob = await xldx.toBlob();`} />
 
-## Node.js Usage
+## node, bun, or deno Usage
 
-```typescript
-import { Xldx } from 'xldx/server';
+<CodeBlock code={`import { Xldx } from 'xldx/server';
 
 const data = [...];
 
@@ -62,21 +59,11 @@ xldx.createSheet(options, ...columns);
 await xldx.write('output.xlsx');
 
 // Or get as Buffer
-const buffer = await xldx.toBuffer();
-```
+const buffer = await xldx.toBuffer();`} />
 
-## TypeScript Configuration
+## Type Definitions
 
-xldx is written in TypeScript and includes type definitions. No additional configuration is needed for TypeScript projects.
-
-```json
-{
-  "compilerOptions": {
-    "moduleResolution": "node",
-    "esModuleInterop": true
-  }
-}
-```
+xldx includes full type definitions for excellent IDE support. No additional configuration needed.
 
 ## Next Steps
 

@@ -1,25 +1,26 @@
 ---
 title: Introduction
-description: "Get started with xldx - Excel file builder for TypeScript/JavaScript"
+description: "Get started with xldx - Excel file builder for JavaScript"
 ---
+
+import CodeBlock from '../../components/docs/CodeBlock.astro';
 
 # Introduction
 
-xldx is a zero-dependency Excel file builder for TypeScript and JavaScript. It provides a simple, type-safe API for creating Excel files with advanced styling and formatting capabilities.
+xldx is a zero-dependency Excel file builder for JavaScript. It provides a simple, type-safe API for creating Excel files with advanced styling and formatting capabilities.
 
 ## Features
 
-- 📦 **Zero dependencies** - Pure TypeScript implementation
-- 🎨 **Pattern-based styling** - Apply styles based on cell data patterns
-- 📊 **Multi-sheet support** - Create complex workbooks
-- 🚀 **TypeScript first** - Full type safety and IntelliSense
-- 🌐 **Universal** - Works in browsers and Node.js
-- 🎯 **Small bundle** - < 17KB minified
+- **Zero dependencies**
+- **Pattern-based styling** - Apply styles based on cell data patterns
+- **Multi-sheet support** - Create complex workbooks
+- **Type safe** - Full type definitions and IntelliSense
+- **Universal** - Works in browsers and node, bun, or deno
+- **Small bundle** - < 17KB minified
 
 ## Quick Example
 
-```typescript
-import { Xldx } from 'xldx';
+<CodeBlock code={`import { Xldx } from 'xldx';
 
 const data = [
   { name: 'Alice', age: 30, city: 'NYC' },
@@ -37,9 +38,8 @@ xldx.createSheet(
 // Browser
 await xldx.download('users.xlsx');
 
-// Node.js
-await xldx.write('users.xlsx');
-```
+// node, bun, or deno
+await xldx.write('users.xlsx');`} />
 
 ## Next Steps
 

@@ -14,7 +14,7 @@ const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL :
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="winter">
   <head>
     <meta charset="UTF-8" />
     <meta name="description" content="xldx - Excel file builder for TypeScript/JavaScript with zero dependencies." />
@@ -25,6 +25,15 @@ const base = import.meta.env.BASE_URL.endsWith('/') ? import.meta.env.BASE_URL :
     <link href="https://fonts.googleapis.com/css2?family=Poetsen+One&display=swap" rel="stylesheet" />
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
+    <script is:inline>
+      // This will be overridden by ThemeToggle component but provides a fallback
+      const storedTheme = localStorage.getItem('theme');
+      if (storedTheme === 'night' || (!storedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+        document.documentElement.setAttribute('data-theme', 'night');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'winter');
+      }
+    </script>
   </head>
   <body>
     <div class="flex flex-col min-h-screen">

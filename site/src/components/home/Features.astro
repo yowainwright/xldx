@@ -23,7 +23,7 @@ import { Code2, Palette, FileSpreadsheet, Package } from 'lucide-react';
       <!-- Pattern-Based Styling -->
       <div class="bg-base-200 rounded-2xl p-6 lg:p-8">
         <div class="flex items-start space-x-4">
-          <div class="flex-shrink-0 w-12 h-12 bg-primary bg-opacity-20 rounded-lg flex items-center justify-center">
+          <div class="flex-shrink-0 w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center">
             <Palette className="w-6 h-6 text-primary" />
           </div>
           <div>
@@ -32,36 +32,34 @@ import { Code2, Palette, FileSpreadsheet, Package } from 'lucide-react';
               Apply styles dynamically based on cell data patterns. Create zebra stripes, 
               highlight differences, or color-code values automatically.
             </p>
-            <pre class="bg-base-300 p-3 rounded-lg text-sm overflow-x-auto">
-<code>createColumn({
-  key: 'amount',
-  patterns: {
-    bgColorPattern: 'zebraBg',
-    textPattern: 'colorPerDiff'
-  }
-})</code></pre>
+            <pre class="bg-base-300 p-3 rounded-lg text-sm overflow-x-auto"><code><span class="code-function">createColumn</span><span class="code-punctuation">(</span>&#123;
+  <span class="code-property">key</span><span class="code-punctuation">:</span> <span class="code-string">'amount'</span><span class="code-punctuation">,</span>
+  <span class="code-property">patterns</span><span class="code-punctuation">:</span> &#123;
+    <span class="code-property">bgColorPattern</span><span class="code-punctuation">:</span> <span class="code-string">'zebraBg'</span><span class="code-punctuation">,</span>
+    <span class="code-property">textPattern</span><span class="code-punctuation">:</span> <span class="code-string">'colorPerDiff'</span>
+  &#125;
+&#125;<span class="code-punctuation">)</span></code></pre>
           </div>
         </div>
       </div>
 
-      <!-- TypeScript First -->
+      <!-- Type Safety -->
       <div class="bg-base-200 rounded-2xl p-6 lg:p-8">
         <div class="flex items-start space-x-4">
-          <div class="flex-shrink-0 w-12 h-12 bg-secondary bg-opacity-20 rounded-lg flex items-center justify-center">
-            <Code2 className="w-6 h-6 text-secondary" />
+          <div class="flex-shrink-0 w-12 h-12 bg-primary/30 rounded-lg flex items-center justify-center">
+            <Code2 className="w-6 h-6 text-primary" />
           </div>
           <div>
-            <h3 class="text-xl font-semibold mb-2">TypeScript First</h3>
+            <h3 class="text-xl font-semibold mb-2">Type Safe API</h3>
             <p class="text-gray-600 dark:text-gray-400 mb-4">
-              Built with TypeScript for complete type safety. Get IntelliSense support
-              and catch errors at compile time with comprehensive type definitions.
+              Full type definitions for IntelliSense support. Catch errors at compile time
+              with comprehensive type checking.
             </p>
-            <pre class="bg-base-300 p-3 rounded-lg text-sm overflow-x-auto">
-<code>const xldx = new Xldx(data);
-xldx.createSheet(
-  { name: 'Report' },
-  ...columns
-);</code></pre>
+            <pre class="bg-base-300 p-3 rounded-lg text-sm overflow-x-auto"><code><span class="code-keyword">const</span> <span class="code-variable">xldx</span> <span class="code-punctuation">=</span> <span class="code-keyword">new</span> <span class="code-function">Xldx</span><span class="code-punctuation">(</span><span class="code-variable">data</span><span class="code-punctuation">);</span>
+<span class="code-variable">xldx</span><span class="code-punctuation">.</span><span class="code-method">createSheet</span><span class="code-punctuation">(</span>
+  &#123; <span class="code-property">name</span><span class="code-punctuation">:</span> <span class="code-string">'Report'</span> &#125;<span class="code-punctuation">,</span>
+  <span class="code-punctuation">...</span><span class="code-variable">columns</span>
+<span class="code-punctuation">);</span></code></pre>
           </div>
         </div>
       </div>
@@ -69,8 +67,8 @@ xldx.createSheet(
       <!-- Multi-Sheet Support -->
       <div class="bg-base-200 rounded-2xl p-6 lg:p-8">
         <div class="flex items-start space-x-4">
-          <div class="flex-shrink-0 w-12 h-12 bg-accent bg-opacity-20 rounded-lg flex items-center justify-center">
-            <FileSpreadsheet className="w-6 h-6 text-accent" />
+          <div class="flex-shrink-0 w-12 h-12 bg-primary/25 rounded-lg flex items-center justify-center">
+            <FileSpreadsheet className="w-6 h-6 text-primary" />
           </div>
           <div>
             <h3 class="text-xl font-semibold mb-2">Multi-Sheet Workbooks</h3>
@@ -78,11 +76,10 @@ xldx.createSheet(
               Create complex workbooks with multiple sheets. Each sheet can have its own
               data, columns, and styling configuration.
             </p>
-            <pre class="bg-base-300 p-3 rounded-lg text-sm overflow-x-auto">
-<code>xldx.createSheets([
-  { options: sheet1, columns },
-  { options: sheet2, columns }
-]);</code></pre>
+            <pre class="bg-base-300 p-3 rounded-lg text-sm overflow-x-auto"><code><span class="code-variable">xldx</span><span class="code-punctuation">.</span><span class="code-method">createSheets</span><span class="code-punctuation">([</span>
+  &#123; <span class="code-property">options</span><span class="code-punctuation">:</span> <span class="code-variable">sheet1</span><span class="code-punctuation">,</span> <span class="code-property">columns</span> &#125;<span class="code-punctuation">,</span>
+  &#123; <span class="code-property">options</span><span class="code-punctuation">:</span> <span class="code-variable">sheet2</span><span class="code-punctuation">,</span> <span class="code-property">columns</span> &#125;
+<span class="code-punctuation">]);</span></code></pre>
           </div>
         </div>
       </div>
@@ -90,19 +87,19 @@ xldx.createSheet(
       <!-- Zero Dependencies -->
       <div class="bg-base-200 rounded-2xl p-6 lg:p-8">
         <div class="flex items-start space-x-4">
-          <div class="flex-shrink-0 w-12 h-12 bg-success bg-opacity-20 rounded-lg flex items-center justify-center">
-            <Package className="w-6 h-6 text-success" />
+          <div class="flex-shrink-0 w-12 h-12 bg-primary/35 rounded-lg flex items-center justify-center">
+            <Package className="w-6 h-6 text-primary" />
           </div>
           <div>
             <h3 class="text-xl font-semibold mb-2">Zero Dependencies</h3>
             <p class="text-gray-600 dark:text-gray-400 mb-4">
               No runtime dependencies means smaller bundle size and fewer security concerns.
-              Everything is implemented in pure TypeScript.
+              Clean, minimal implementation.
             </p>
             <div class="flex flex-wrap gap-2 mt-4">
-              <span class="badge badge-primary">No ExcelJS</span>
-              <span class="badge badge-primary">No SheetJS</span>
-              <span class="badge badge-primary">Pure TS</span>
+              <span class="badge badge-primary rounded-md">No ExcelJS</span>
+              <span class="badge badge-primary rounded-md">No SheetJS</span>
+              <span class="badge badge-primary rounded-md">0 Dependencies</span>
             </div>
           </div>
         </div>
@@ -115,31 +112,29 @@ xldx.createSheet(
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div>
           <h4 class="font-semibold mb-3">Browser Usage</h4>
-          <pre class="bg-base-300 p-4 rounded-lg text-sm overflow-x-auto">
-<code>import { Xldx } from 'xldx/browser';
+          <pre class="bg-base-300 p-4 rounded-lg text-sm overflow-x-auto"><code><span class="code-keyword">import</span> &#123; <span class="code-variable">Xldx</span> &#125; <span class="code-keyword">from</span> <span class="code-string">'xldx/browser'</span><span class="code-punctuation">;</span>
 
-const xldx = new Xldx(data);
-xldx.createSheet(options, ...columns);
+<span class="code-keyword">const</span> <span class="code-variable">xldx</span> <span class="code-punctuation">=</span> <span class="code-keyword">new</span> <span class="code-function">Xldx</span><span class="code-punctuation">(</span><span class="code-variable">data</span><span class="code-punctuation">);</span>
+<span class="code-variable">xldx</span><span class="code-punctuation">.</span><span class="code-method">createSheet</span><span class="code-punctuation">(</span><span class="code-variable">options</span><span class="code-punctuation">,</span> <span class="code-punctuation">...</span><span class="code-variable">columns</span><span class="code-punctuation">);</span>
 
-// Download directly
-await xldx.download('report.xlsx');
+<span class="code-comment">// Download directly</span>
+<span class="code-keyword">await</span> <span class="code-variable">xldx</span><span class="code-punctuation">.</span><span class="code-method">download</span><span class="code-punctuation">(</span><span class="code-string">'report.xlsx'</span><span class="code-punctuation">);</span>
 
-// Or get as Blob
-const blob = await xldx.toBlob();</code></pre>
+<span class="code-comment">// Or get as Blob</span>
+<span class="code-keyword">const</span> <span class="code-variable">blob</span> <span class="code-punctuation">=</span> <span class="code-keyword">await</span> <span class="code-variable">xldx</span><span class="code-punctuation">.</span><span class="code-method">toBlob</span><span class="code-punctuation">();</span></code></pre>
         </div>
         <div>
-          <h4 class="font-semibold mb-3">Node.js Usage</h4>
-          <pre class="bg-base-300 p-4 rounded-lg text-sm overflow-x-auto">
-<code>import { Xldx } from 'xldx/server';
+          <h4 class="font-semibold mb-3">node, bun, or deno Usage</h4>
+          <pre class="bg-base-300 p-4 rounded-lg text-sm overflow-x-auto"><code><span class="code-keyword">import</span> &#123; <span class="code-variable">Xldx</span> &#125; <span class="code-keyword">from</span> <span class="code-string">'xldx/server'</span><span class="code-punctuation">;</span>
 
-const xldx = new Xldx(data);
-xldx.createSheet(options, ...columns);
+<span class="code-keyword">const</span> <span class="code-variable">xldx</span> <span class="code-punctuation">=</span> <span class="code-keyword">new</span> <span class="code-function">Xldx</span><span class="code-punctuation">(</span><span class="code-variable">data</span><span class="code-punctuation">);</span>
+<span class="code-variable">xldx</span><span class="code-punctuation">.</span><span class="code-method">createSheet</span><span class="code-punctuation">(</span><span class="code-variable">options</span><span class="code-punctuation">,</span> <span class="code-punctuation">...</span><span class="code-variable">columns</span><span class="code-punctuation">);</span>
 
-// Write to file
-await xldx.write('report.xlsx');
+<span class="code-comment">// Write to file</span>
+<span class="code-keyword">await</span> <span class="code-variable">xldx</span><span class="code-punctuation">.</span><span class="code-method">write</span><span class="code-punctuation">(</span><span class="code-string">'report.xlsx'</span><span class="code-punctuation">);</span>
 
-// Or get as Buffer
-const buffer = await xldx.toBuffer();</code></pre>
+<span class="code-comment">// Or get as Buffer</span>
+<span class="code-keyword">const</span> <span class="code-variable">buffer</span> <span class="code-punctuation">=</span> <span class="code-keyword">await</span> <span class="code-variable">xldx</span><span class="code-punctuation">.</span><span class="code-method">toBuffer</span><span class="code-punctuation">();</span></code></pre>
         </div>
       </div>
     </div>

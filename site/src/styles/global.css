@@ -2,53 +2,7 @@
 @plugin "daisyui" {
   themes:
     winter --default,
-    winterDark --prefersdark;
-  
-  theme-winter: {
-    primary: #0EA5E9;
-    primary-content: #FFFFFF;
-    secondary: #F472B6;
-    secondary-content: #4C1D95;
-    accent: #FBBF24;
-    accent-content: #78350F;
-    neutral: #1F2937;
-    neutral-content: #E5E7EB;
-    base-100: #FFFFFF;
-    base-200: #F3F4F6;
-    base-300: #E5E7EB;
-    base-content: #111827;
-    info: #67E8F9;
-    info-content: #164E63;
-    success: #A3E635;
-    success-content: #3F6212;
-    warning: #FACC15;
-    warning-content: #713F12;
-    error: #FCA5A5;
-    error-content: #7F1D1D;
-  }
-  
-  theme-winterDark: {
-    primary: #f15a16;
-    primary-content: #000000;
-    secondary: #0b8d49;
-    secondary-content: #b3e26a;
-    accent: #0440db;
-    accent-content: #87caf0;
-    neutral: #e0d6c8;
-    neutral-content: #111827;
-    base-100: #000000;
-    base-200: #0c0b09;
-    base-300: #1a1814;
-    base-content: #E5E7EB;
-    info: #981706;
-    info-content: #e9b19c;
-    success: #5c19ca;
-    success-content: #c09ded;
-    warning: #0533ea;
-    warning-content: #8ec0ed;
-    error: #035a5a;
-    error-content: #80e2e2;
-  }
+    night --prefersdark;
 }
 @plugin "@tailwindcss/typography";
 
@@ -70,6 +24,15 @@
   --sidebar-width: 20rem;
   --footer-height: 4rem;
   --nav-z-index: 50;
+
+  /* Code syntax highlighting colors */
+  --code-keyword: #ec4899; /* Pink */
+  --code-string: #fbbf24; /* Yellow */
+  --code-function: #3b82f6; /* Blue */
+  --code-variable: #0ea5e9; /* Sky Blue */
+  --code-comment: #6b7280; /* Gray */
+  --code-number: #a78bfa; /* Purple */
+  --code-punctuation: #94a3b8; /* Slate */
 }
 
 
@@ -87,6 +50,23 @@
     width: 100%;
   }
 }
+
+/* Code block styling */
+pre {
+  border: 1px solid rgba(14, 165, 233, 0.2);
+  position: relative;
+}
+
+/* Syntax highlighting for code blocks */
+.code-keyword { color: var(--code-keyword); font-weight: 600; }
+.code-string { color: var(--code-string); }
+.code-function { color: var(--code-function); font-weight: 500; }
+.code-variable { color: var(--code-variable); }
+.code-comment { color: var(--code-comment); font-style: italic; }
+.code-number { color: var(--code-number); }
+.code-punctuation { color: var(--code-punctuation); }
+.code-property { color: var(--code-variable); }
+.code-method { color: var(--code-function); }
 
 @media (max-width: 640px) {
   /* Ensure code blocks are scrollable on mobile */
