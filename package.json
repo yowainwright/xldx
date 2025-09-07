@@ -1,6 +1,6 @@
 {
   "name": "xldx",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "description": "A powerful Excel file builder for TypeScript/JavaScript with advanced styling and theming capabilities",
   "main": "dist/index.cjs",
   "module": "dist/index.js",
