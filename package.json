@@ -40,8 +40,8 @@
     "commit-msg": "commitlint --edit $1",
     "dev": "cd site && bun run dev",
     "lint": "turbo run lint:run",
-    "lint:run": "oxlint src tests --ignore-pattern='tests/fixtures/*'",
-    "lint:fix": "oxlint src tests --fix",
+    "lint:run": "oxlint src test",
+    "lint:fix": "oxlint src test --fix",
     "format": "turbo run format:run",
     "format:run": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
@@ -50,13 +50,13 @@
     "preview": "bun run --cwd site preview",
     "release": "release-it",
     "test": "turbo run test:run",
-    "test:run": "bun test tests --timeout 5000",
-    "test:all": "bun test tests --timeout 5000",
+    "test:run": "bun test test --timeout 5000",
+    "test:all": "bun test test --timeout 5000",
     "test:unit": "turbo run test:unit",
-    "test:unit:run": "bun test tests --timeout 5000",
+    "test:unit:run": "bun test test --timeout 5000",
     "test:integration": "turbo run test:integration",
-    "test:integration:run": "bun test tests --timeout 5000",
-    "test:watch": "bun test --watch tests",
+    "test:integration:run": "bun test test --timeout 5000",
+    "test:watch": "bun test --watch test",
     "typecheck": "turbo run typecheck:run",
     "typecheck:run": "tsc --noEmit",
     "update": "codependence --update && bun install"
@@ -117,7 +117,7 @@
       "oxlint --fix",
       "prettier --write"
     ],
-    "tests/**/*.ts": [
+    "test/**/*.ts": [
       "oxlint --fix",
       "prettier --write"
     ]
