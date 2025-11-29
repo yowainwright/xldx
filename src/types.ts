@@ -37,7 +37,7 @@ export interface SheetsData {
 }
 
 
-import type { CellStyle } from "./schemas";
+import type { CellStyle, ColumnDefinition } from "./schemas";
 
 export interface SheetDataAPI {
   getRowsData: () => DataRow[];
@@ -48,4 +48,21 @@ export interface SheetDataAPI {
   updateColumnStyles?: (columnKey: string, styles: CellStyle) => void;
   updateRowData: (rowIndex: number, data: DataRow) => void;
   updateColumnData: (columnKey: string, data: unknown[]) => void;
+}
+
+export interface CellProcessingParams {
+  rowData: DataRow;
+  rowIndex: number;
+  column: ColumnDefinition;
+  columnIndex: number;
+  allData: DataRow[];
+  defaultStyle?: CellStyle;
+}
+
+export interface WorksheetView {
+  state?: "frozen";
+  xSplit?: number;
+  ySplit?: number;
+  showGridLines?: boolean;
+  showRowColHeaders?: boolean;
 }
