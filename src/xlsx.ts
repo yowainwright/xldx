@@ -238,7 +238,10 @@ ${rows}
   
   generate(): Uint8Array {
     const zip = new MiniZip();
-    
+
+    // Generate worksheets first to populate shared strings
+    const worksheetXml = this.worksheets.map(sheet => this.generateWorksheet(sheet));
+
     // Add required files
     zip.addFile('[Content_Types].xml', this.generateContentTypes());
     zip.addFile('_rels/.rels', this.generateRels());
@@ -246,12 +249,12 @@ ${rows}
     zip.addFile('xl/_rels/workbook.xml.rels', this.generateWorkbookRels());
     zip.addFile('xl/styles.xml', this.generateStyles());
     zip.addFile('xl/sharedStrings.xml', this.generateSharedStrings());
-    
+
     // Add worksheets
-    this.worksheets.forEach((sheet, i) => {
-      zip.addFile(`xl/worksheets/sheet${i + 1}.xml`, this.generateWorksheet(sheet));
+    worksheetXml.forEach((xml, i) => {
+      zip.addFile(`xl/worksheets/sheet${i + 1}.xml`, xml);
     });
-    
+
     return zip.generate();
   }
 }
@@ -305,50 +308,44 @@ export class XlsxReader {
   private parseWorksheet(sheetIndex: number, sharedStrings: string[]): any[][] {
     const content = this.zip.getFile(`xl/worksheets/sheet${sheetIndex + 1}.xml`);
     if (!content) return [];
-    
+
     const rows: any[][] = [];
-    const rowRegex = /<row[^>]*r="(\d+)"[^>]*>(.*?)<\/row>/gs;
-    const cellRegex = /<c[^>]*r="([A-Z]+)(\d+)"[^>]*(?:t="([^"]*)")?[^>]*>(?:<v[^>]*>(.*?)<\/v>)?/g;
-    
+    const rowRegex = /<row[^>]*r="(\d+)"[^>]*>([\s\S]*?)<\/row>/g;
+    const cellRegex = /<c\s+r="([A-Z]+)(\d+)"(?:\s+t="([^"]*)")?[^>]*>[\s\S]*?<v>([^<]*)<\/v>/g;
+
     let rowMatch;
     while ((rowMatch = rowRegex.exec(content)) !== null) {
       const rowNum = parseInt(rowMatch[1]) - 1;
       const rowContent = rowMatch[2];
       const row: any[] = [];
-      
+
       let cellMatch;
       cellRegex.lastIndex = 0;
       while ((cellMatch = cellRegex.exec(rowContent)) !== null) {
         const colLetters = cellMatch[1];
         const type = cellMatch[3];
         const value = cellMatch[4];
-        
-        if (value !== undefined) {
-          let cellValue: any;
-          
-          if (type === 's') {
-            // Shared string
-            cellValue = sharedStrings[parseInt(value)] || '';
-          } else if (type === 'b') {
-            // Boolean
-            cellValue = value === '1';
-          } else if (type === 'str') {
-            // Inline string
-            cellValue = this.unescapeXml(value);
-          } else {
-            // Number (or date)
-            const num = parseFloat(value);
-            cellValue = isNaN(num) ? value : num;
-          }
-          
-          const colIndex = this.lettersToColumn(colLetters);
-          row[colIndex] = cellValue;
+
+        let cellValue: any;
+
+        if (type === 's') {
+          cellValue = sharedStrings[parseInt(value)] || '';
+        } else if (type === 'b') {
+          cellValue = value === '1';
+        } else if (type === 'str') {
+          cellValue = this.unescapeXml(value);
+        } else {
+          const num = parseFloat(value);
+          cellValue = isNaN(num) ? value : num;
         }
+
+        const colIndex = this.lettersToColumn(colLetters);
+        row[colIndex] = cellValue;
       }
-      
+
       rows[rowNum] = row;
     }
-    
+
     return rows;
   }
   

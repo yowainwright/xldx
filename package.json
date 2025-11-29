@@ -2,30 +2,25 @@
   "name": "xldx",
   "version": "0.0.1",
   "description": "A powerful Excel file builder for TypeScript/JavaScript with advanced styling and theming capabilities",
-  "main": "dist/index.cjs",
-  "module": "dist/index.js",
-  "browser": "dist/index.global.js",
+  "main": "dist/server/index.js",
+  "module": "dist/browser/index.js",
+  "browser": "dist/browser/index.js",
   "type": "module",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "browser": "./dist/browser/index.js",
-      "node": {
-        "import": "./dist/server/index.js",
-        "require": "./dist/server/index.cjs"
-      },
+      "node": "./dist/server/index.js",
       "default": "./dist/browser/index.js"
     },
     "./browser": {
       "types": "./dist/browser/index.d.ts",
-      "import": "./dist/browser/index.js",
-      "require": "./dist/browser/index.cjs"
+      "import": "./dist/browser/index.js"
     },
     "./server": {
       "types": "./dist/server/index.d.ts",
-      "import": "./dist/server/index.js",
-      "require": "./dist/server/index.cjs"
+      "import": "./dist/server/index.js"
     }
   },
   "files": [
@@ -33,11 +28,11 @@
   ],
   "scripts": {
     "build": "turbo run build:pkg",
-    "build:pkg": "bun run clean && bun run build:run",
-    "build:run": "tsup",
-    "clean": "rimraf dist",
-    "commit": "git-cz",
-    "commit-msg": "commitlint --edit $1",
+    "build:pkg": "bun run clean && bun run build:browser && bun run build:node && bun run build:types",
+    "build:browser": "bun build src/browser/index.ts --outfile dist/browser/index.js --target browser --minify",
+    "build:node": "bun build src/server/index.ts --outfile dist/server/index.js --target node --minify --external fs --external fs/promises --external buffer",
+    "build:types": "tsc --emitDeclarationOnly --outDir dist",
+    "clean": "rm -rf dist",
     "dev": "cd site && bunx astro dev",
     "lint": "turbo run lint:run",
     "lint:run": "oxlint src test",
@@ -45,7 +40,6 @@
     "format": "turbo run format:run",
     "format:run": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "pre-commit": "lint-staged --quiet && bun run test",
     "prepublishOnly": "bun run test && bun run build",
     "preview": "bun run --cwd site preview",
     "release": "release-it",
@@ -87,40 +81,15 @@
     "url": "https://github.com/yowainwright/xldx/issues"
   },
   "homepage": "https://github.com/yowainwright/xldx",
-  "dependencies": {},
   "devDependencies": {
-    "@commitlint/cli": "19.8.1",
-    "@commitlint/config-conventional": "19.8.1",
-    "@sinclair/typebox": "^0.34.41",
-    "@types/node": "24.1.0",
+    "@types/bun": "latest",
     "codependence": "^1.0.0-1",
-    "husky": "9.1.7",
-    "invert-color": "^2.0.0",
-    "is-ci": "^4.1.0",
-    "lint-staged": "16.1.2",
     "oxlint": "^1.12.0",
+    "pastoralist": "latest",
     "prettier": "3.6.2",
     "release-it": "19.0.4",
-    "rimraf": "6.0.1",
-    "tslib": "2.8.1",
-    "tsup": "8.5.0",
     "turbo": "2.5.5",
     "typescript": "5.8.3"
-  },
-  "commitlint": {
-    "extends": [
-      "@commitlint/config-conventional"
-    ]
-  },
-  "lint-staged": {
-    "src/**/*.ts": [
-      "oxlint --fix",
-      "prettier --write"
-    ],
-    "test/**/*.ts": [
-      "oxlint --fix",
-      "prettier --write"
-    ]
   },
   "release-it": {
     "git": {

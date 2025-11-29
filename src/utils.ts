@@ -1,6 +1,6 @@
-import type { PatternContext, PatternFunction } from "./schemas";
+import type { PatternContext, PatternFunction, CellStyle, ColumnDefinition } from "./schemas";
 import type { ColorTheme } from "./themes";
-import type { WidthCalculationOptions, TextMatch, WidthResult } from "./types";
+import type { WidthCalculationOptions, TextMatch, WidthResult, DataRow, CellProcessingParams, WorksheetView } from "./types";
 import { defaultTheme } from "./themes";
 
 let currentTheme: ColorTheme = defaultTheme;
@@ -23,7 +23,6 @@ export const zebraBg: PatternFunction = (context: PatternContext) => {
 };
 
 export const bgColorBasedOnDiff: PatternFunction = (context: PatternContext) => {
-  const colorMap = new Map<unknown, string>();
   const baseColors = [
     currentTheme.base[100],
     currentTheme.base[200],
@@ -31,21 +30,24 @@ export const bgColorBasedOnDiff: PatternFunction = (context: PatternContext) => 
     currentTheme.base[400],
     currentTheme.base[500],
   ];
-  let colorIndex = 0;
   
-  context.allData.forEach((row) => {
-    const value = row[context.columnKey];
-    const hasValue = value !== undefined && value !== null;
-    const isNewValue = !colorMap.has(value);
-    
-    if (!hasValue || !isNewValue) return;
-    
-    colorMap.set(value, baseColors[colorIndex % baseColors.length]);
-    colorIndex++;
-  });
+  const uniqueValues = context.allData
+    .map(row => row[context.columnKey])
+    .filter((value, index, self) => 
+      value !== undefined && 
+      value !== null && 
+      self.indexOf(value) === index
+    );
+  
+  const colorMap = new Map(
+    uniqueValues.map((value, index) => 
+      [value, baseColors[index % baseColors.length]]
+    )
+  );
   
   const color = colorMap.get(context.value);
-  if (!color) return null;
+  const hasNoColor = !color;
+  if (hasNoColor) return null;
   
   return {
     fill: {
@@ -121,10 +123,7 @@ export function createSetWidthBasedOnCharacterCount(
   };
 }
 
-export function customizeInput(
-  match: string | TextMatch,
-  _replacement: string
-): PatternFunction {
+export function customizeInput(match: string | TextMatch) {
   return (context: PatternContext) => {
     const value = String(context.value);
     
@@ -175,3 +174,142 @@ export const builtInPatterns = {
   colorPerDiff,
   txtColorBasedOnDiff,
 };
+
+export function applyPattern(
+  pattern: string | PatternFunction | undefined,
+  context: PatternContext,
+  customPatterns: Record<string, PatternFunction> = {}
+): Partial<CellStyle> | null {
+  if (!pattern) return null;
+  
+  const isFunction = typeof pattern === "function";
+  if (isFunction) return (pattern as PatternFunction)(context) as Partial<CellStyle> | null;
+  
+  const isString = typeof pattern === "string";
+  if (!isString) return null;
+  
+  const builtIn = builtInPatterns[pattern as keyof typeof builtInPatterns];
+  if (builtIn) return builtIn(context);
+  
+  const custom = customPatterns[pattern];
+  return custom ? custom(context) : null;
+}
+
+export function buildWorksheetViews(options: {
+  freezePane?: { row: number; column: number };
+  showGridLines?: boolean;
+  showRowColHeaders?: boolean;
+}) {
+  const views: WorksheetView[] = [];
+  
+  const baseView: WorksheetView = {};
+  
+  const hasFreezePane = options.freezePane !== undefined;
+  if (hasFreezePane) {
+    baseView.state = "frozen";
+    baseView.xSplit = options.freezePane!.column;
+    baseView.ySplit = options.freezePane!.row;
+  }
+  
+  const hasGridLinesOption = options.showGridLines !== undefined;
+  if (hasGridLinesOption) {
+    baseView.showGridLines = options.showGridLines;
+  }
+  
+  const hasRowColHeadersOption = options.showRowColHeaders !== undefined;
+  if (hasRowColHeadersOption) {
+    baseView.showRowColHeaders = options.showRowColHeaders;
+  }
+  
+  const hasViewOptions = Object.keys(baseView).length > 0;
+  if (hasViewOptions) {
+    views.push(baseView);
+  }
+  
+  return views.length > 0 ? views : undefined;
+}
+
+export function buildPatternContext(params: {
+  rowIndex: number;
+  colIndex: number;
+  rowData: DataRow;
+  columnKey: string;
+  value: unknown;
+  previousRowData?: DataRow;
+  allData: DataRow[];
+}): PatternContext {
+  const actualRowIndex = params.rowIndex + 2;
+  
+  return {
+    rowIndex: actualRowIndex,
+    columnIndex: params.colIndex,
+    value: params.value,
+    previousValue: params.previousRowData?.[params.columnKey],
+    rowData: params.rowData,
+    allData: params.allData,
+    columnKey: params.columnKey,
+  };
+}
+
+export function resolveCellStyles(params: {
+  column: ColumnDefinition;
+  rowIndex: number;
+  defaultStyle?: CellStyle;
+}): CellStyle | undefined {
+  const actualRowIndex = params.rowIndex + 2;
+  
+  const hasRowOverride = params.column.rows?.[actualRowIndex];
+  if (hasRowOverride) {
+    return params.column.rows![actualRowIndex];
+  }
+  
+  return {
+    ...(params.defaultStyle || {}),
+    ...(params.column.style || {}),
+  };
+}
+
+export function buildCellProcessingData(
+  data: DataRow[],
+  columns: ColumnDefinition[],
+  defaultStyle?: CellStyle
+): CellProcessingParams[] {
+  return data.flatMap((rowData, rowIndex) =>
+    columns.map((column, columnIndex) => ({
+      rowData,
+      rowIndex,
+      column,
+      columnIndex,
+      allData: data,
+      defaultStyle,
+    }))
+  );
+}
+
+export function processCellData(params: CellProcessingParams) {
+  const { rowData, rowIndex, column, columnIndex, allData, defaultStyle } = params;
+  
+  const cellStyle = resolveCellStyles({
+    column,
+    rowIndex,
+    defaultStyle,
+  });
+  
+  const context = buildPatternContext({
+    rowIndex,
+    colIndex: columnIndex,
+    rowData,
+    columnKey: column.key,
+    value: rowData[column.key],
+    previousRowData: rowIndex > 0 ? allData[rowIndex - 1] : undefined,
+    allData,
+  });
+  
+  return {
+    rowIndex,
+    columnIndex,
+    cellStyle,
+    context,
+    patterns: column.patterns,
+  };
+}
