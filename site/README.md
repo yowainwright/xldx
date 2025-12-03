@@ -1,54 +1,36 @@
-# Documentation Template
-
-Thank you for purchasing this template. I hope you build something great with it!
-
-## Features
-
-- Made with Astro, Markdown, Tailwind CSS and daisyUI
-- Search functionality
-- SEO friendly, Lightweight and fast
-- Dark mode and Light mode
-
-## Including
-
-- Homepage with features sections, code demo, contributors images, testimonials and installation guide
-- Document pages made from Markdown files with Sidebar, page content links, sponsors section
-- Search bar using Algolia DocSearch
-- Theme switch button with dark theme and light theme (compatible with all daisyUI themes)
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
 
-1. Install dependencies
+First, run the development server:
 
-```
-bun install
-```
-
-2. Run the dev server
-
-```
-bun run dev
-```
-
-3. Build for production
-
-```
-bun run build
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-## Setup Algolia DocSearch
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-1. Create an account on [Algolia DocSearch](https://docsearch.algolia.com/)
-2. Add your website
-3. Create a `.env` file in the root directory
-4. Add your Algolia DocSearch API details to the `.env` file like this:
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-```
-VITE_ALGOLIA_APP_ID=XXXXXXXXXX
-VITE_ALGOLIA_API_KEY=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-VITE_ALGOLIA_INDEX_NAME=xxxxxxxx
-```
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Icons credit
+## Learn More
 
-[Credit: Icons from Flat Icons](https://www.flaticon.com/free-icons)
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

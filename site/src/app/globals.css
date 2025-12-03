@@ -1,0 +1,137 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --font-sans: var(--font-inter);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-code-background: var(--code-background);
+  --color-code-foreground: var(--code-foreground);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+/* Prose overrides for dark mode */
+.prose {
+  --tw-prose-body: var(--foreground);
+  --tw-prose-headings: var(--foreground);
+}
+
+:root {
+  --radius: 0.625rem;
+  /* Light theme - Django inspired with bright emerald green */
+  --background: #f8f8f8;
+  --foreground: #0f4d38;
+  /* Code block colors */
+  --code-background: #f0fdf7;
+  --code-foreground: #0f4d38;
+  --card: #ffffff;
+  --card-foreground: #0f4d38;
+  --popover: #ffffff;
+  --popover-foreground: #0f4d38;
+  --primary: #10b981;
+  --primary-foreground: #ffffff;
+  --secondary: #e8f5f0;
+  --secondary-foreground: #0f4d38;
+  --muted: #ececec;
+  --muted-foreground: #4a7c6a;
+  --accent: #c9f0dd;
+  --accent-foreground: #0f4d38;
+  --destructive: #ef4444;
+  --border: #d1e7dd;
+  --input: #d1e7dd;
+  --ring: #10b981;
+  --chart-1: #10b981;
+  --chart-2: #0ea5e9;
+  --chart-3: #8b5cf6;
+  --chart-4: #f59e0b;
+  --chart-5: #ef4444;
+  --sidebar: #f0fdf7;
+  --sidebar-foreground: #0f4d38;
+  --sidebar-primary: #10b981;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #c9f0dd;
+  --sidebar-accent-foreground: #0f4d38;
+  --sidebar-border: #d1e7dd;
+  --sidebar-ring: #10b981;
+}
+
+.dark {
+  /* Dark theme - Blueberry inspired with green/yellow focus */
+  --background: #242938;
+  --foreground: #c5d1b8;
+  /* Code block colors */
+  --code-background: #1c212e;
+  --code-foreground: #a6accd;
+  --card: #1c212e;
+  --card-foreground: #e4f0fb;
+  --popover: #1c212e;
+  --popover-foreground: #e4f0fb;
+  --primary: #34d399;
+  --primary-foreground: #1c212e;
+  --secondary: #2d3348;
+  --secondary-foreground: #c5d1b8;
+  --muted: #2d3348;
+  --muted-foreground: #8b9a7d;
+  --accent: #fbbf24;
+  --accent-foreground: #1c212e;
+  --destructive: #de4575;
+  --border: #3d4463;
+  --input: #3d4463;
+  --ring: #34d399;
+  --chart-1: #34d399;
+  --chart-2: #fbbf24;
+  --chart-3: #0ea5e9;
+  --chart-4: #de4575;
+  --chart-5: #a78bfa;
+  --sidebar: #181d28;
+  --sidebar-foreground: #c5d1b8;
+  --sidebar-primary: #34d399;
+  --sidebar-primary-foreground: #1c212e;
+  --sidebar-accent: #2d3348;
+  --sidebar-accent-foreground: #e4f0fb;
+  --sidebar-border: #3d4463;
+  --sidebar-ring: #34d399;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
