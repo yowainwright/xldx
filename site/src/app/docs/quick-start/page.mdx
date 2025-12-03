@@ -1,0 +1,90 @@
+---
+title: Quick Start
+description: Build your first spreadsheet with xldx
+---
+
+# Quick Start
+
+This guide will walk you through creating your first Excel file with xldx.
+
+## Basic Example
+
+```typescript
+import { Xldx } from "xldx";
+
+// Your data as an array of objects
+const data = [
+  { name: "Alice", department: "Engineering", salary: 95000 },
+  { name: "Bob", department: "Marketing", salary: 75000 },
+  { name: "Charlie", department: "Engineering", salary: 110000 },
+];
+
+// Create a new Xldx instance with your data
+const xldx = new Xldx(data);
+
+// Create a sheet with column definitions
+xldx.createSheet(
+  { name: "Employees" },
+  { key: "name", header: "Employee Name" },
+  { key: "department", header: "Department" },
+  { key: "salary", header: "Salary" }
+);
+
+// Download the file (browser)
+await xldx.download("employees.xlsx");
+```
+
+## Adding Column Widths
+
+You can specify column widths or use auto-sizing:
+
+```typescript
+xldx.createSheet(
+  { name: "Employees" },
+  { key: "name", header: "Employee Name", width: 200 },
+  { key: "department", header: "Department", width: "auto" },
+  { key: "salary", header: "Salary", width: 100 }
+);
+```
+
+## Multiple Sheets
+
+Create workbooks with multiple sheets:
+
+```typescript
+const xldx = new Xldx(employeeData);
+
+// First sheet
+xldx.createSheet(
+  { name: "Employees" },
+  { key: "name", header: "Name" },
+  { key: "department", header: "Department" }
+);
+
+// Second sheet with different data
+const xldx2 = new Xldx(departmentData);
+xldx2.createSheet(
+  { name: "Departments" },
+  { key: "name", header: "Department Name" },
+  { key: "budget", header: "Budget" }
+);
+```
+
+## Reading Excel Files
+
+xldx can also read existing XLSX files:
+
+```typescript
+// From a file input or fetch response
+const buffer = await file.arrayBuffer();
+const result = await Xldx.read(new Uint8Array(buffer));
+
+console.log(result.sheets);
+// [{ name: "Sheet1", data: [["Header1", "Header2"], ["Row1Col1", "Row1Col2"]] }]
+```
+
+## Next Steps
+
+- [Creating Sheets](/docs/creating-sheets) - Learn more about sheet options
+- [Column Definitions](/docs/columns) - Configure columns in detail
+- [Styling](/docs/styling) - Add styles to your spreadsheet

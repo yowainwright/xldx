@@ -2,6 +2,7 @@
   "name": "xldx",
   "version": "0.0.1",
   "description": "A powerful Excel file builder for TypeScript/JavaScript with advanced styling and theming capabilities",
+  "workspaces": ["site"],
   "main": "dist/server/index.js",
   "module": "dist/browser/index.js",
   "browser": "dist/browser/index.js",
@@ -33,7 +34,7 @@
     "build:node": "bun build src/server/index.ts --outfile dist/server/index.js --target node --minify --external fs --external fs/promises --external buffer",
     "build:types": "tsc --emitDeclarationOnly --outDir dist",
     "clean": "rm -rf dist",
-    "dev": "cd site && bunx astro dev",
+    "dev": "bun run --cwd site dev",
     "lint": "turbo run lint:run",
     "lint:run": "oxlint src test",
     "lint:fix": "oxlint src test --fix",
@@ -76,7 +77,7 @@
     "data-visualization"
   ],
   "author": "Jeff Wainwright <https:jeffry.in> (yowainwright@gmail.com)",
-  "license": "MIT",
+  "license": "Elastic-2.0",
   "bugs": {
     "url": "https://github.com/yowainwright/xldx/issues"
   },

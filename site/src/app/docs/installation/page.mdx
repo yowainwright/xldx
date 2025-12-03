@@ -1,0 +1,76 @@
+---
+title: Installation
+description: Install xldx in your project
+---
+
+# Installation
+
+Install xldx using your preferred package manager:
+
+```bash
+# npm
+npm install xldx
+
+# yarn
+yarn add xldx
+
+# pnpm
+pnpm add xldx
+
+# bun
+bun add xldx
+```
+
+## Browser Usage
+
+For browser environments, import from the main entry point:
+
+```typescript
+import { Xldx } from "xldx";
+
+const xldx = new Xldx(data);
+xldx.createSheet({ name: "Sheet1" }, { key: "col1" });
+
+// Download in browser
+await xldx.download("file.xlsx");
+
+// Or get as Blob
+const blob = await xldx.toBlob();
+
+// Or get as Uint8Array
+const bytes = await xldx.toUint8Array();
+```
+
+## Node.js Usage
+
+For Node.js environments, you get additional methods for file system operations:
+
+```typescript
+import { Xldx } from "xldx";
+
+const xldx = new Xldx(data);
+xldx.createSheet({ name: "Sheet1" }, { key: "col1" });
+
+// Write to file
+await xldx.write("output.xlsx");
+
+// Or get as Buffer
+const buffer = await xldx.toBuffer();
+```
+
+## TypeScript
+
+xldx is written in TypeScript and includes full type definitions. No additional `@types` packages are needed.
+
+```typescript
+import { Xldx, type ColumnDefinition, type SheetOptions } from "xldx";
+
+const columns: ColumnDefinition[] = [
+  { key: "name", header: "Name" },
+  { key: "value", header: "Value" },
+];
+
+const options: SheetOptions = {
+  name: "MySheet",
+};
+```
