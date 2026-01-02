@@ -36,7 +36,6 @@ export interface SheetsData {
   [key: string]: unknown;
 }
 
-
 import type { CellStyle, ColumnDefinition } from "./schemas";
 
 export interface SheetDataAPI {
@@ -65,4 +64,14 @@ export interface WorksheetView {
   ySplit?: number;
   showGridLines?: boolean;
   showRowColHeaders?: boolean;
+}
+
+export interface SerializedSheet {
+  name: string;
+  data: unknown[][];
+  columnWidths?: number[];
+}
+
+export interface SerializedWorkbook {
+  sheets: SerializedSheet[];
 }

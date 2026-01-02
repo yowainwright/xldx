@@ -29,5 +29,5 @@ export type {
   RowStyleOverrideSchema,
   ColumnDefinitionSchema,
   SheetOptionsSchema,
-  XldxOptionsSchema
-} from './schemas-types';
+  XldxOptionsSchema,
+} from "./schemas-types";

@@ -36,7 +36,14 @@ export interface BordersStyle {
 }
 
 export interface AlignmentStyle {
-  horizontal?: "left" | "center" | "right" | "fill" | "justify" | "centerContinuous" | "distributed";
+  horizontal?:
+    | "left"
+    | "center"
+    | "right"
+    | "fill"
+    | "justify"
+    | "centerContinuous"
+    | "distributed";
   vertical?: "top" | "middle" | "bottom" | "distributed" | "justify";
   wrapText?: boolean;
   shrinkToFit?: boolean;
@@ -63,7 +70,9 @@ export interface PatternContext {
   columnKey: string;
 }
 
-export type PatternFunction = (context: PatternContext) => Partial<CellStyle> | null;
+export type PatternFunction = (
+  context: PatternContext,
+) => Partial<CellStyle> | null;
 
 export interface ColumnPattern {
   bgColorPattern?: string | PatternFunction;
@@ -115,5 +124,5 @@ export type {
   RowStyleOverride as RowStyleOverrideSchema,
   ColumnDefinition as ColumnDefinitionSchema,
   SheetOptions as SheetOptionsSchema,
-  XldxOptions as XldxOptionsSchema
+  XldxOptions as XldxOptionsSchema,
 };

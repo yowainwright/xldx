@@ -22,13 +22,13 @@ bun add xldx
 ## Quick Start
 
 ```typescript
-import { Xldx } from 'xldx';
+import { Xldx } from "xldx";
 
 // Sample data
 const data = [
-  { id: 1, name: 'John', age: 30, status: 'active' },
-  { id: 2, name: 'Jane', age: 25, status: 'inactive' },
-  { id: 3, name: 'Bob', age: 35, status: 'active' }
+  { id: 1, name: "John", age: 30, status: "active" },
+  { id: 2, name: "Jane", age: 25, status: "inactive" },
+  { id: 3, name: "Bob", age: 35, status: "active" },
 ];
 
 // Create Excel builder
@@ -36,18 +36,18 @@ const xlsx = new Xldx(data);
 
 // Create a sheet with columns
 xlsx.createSheet(
-  { name: 'Users' },
-  { key: 'id', header: 'ID', width: 10 },
-  { key: 'name', header: 'Name', width: 20 },
-  { key: 'age', header: 'Age', width: 10 },
-  { key: 'status', header: 'Status', width: 15 }
+  { name: "Users" },
+  { key: "id", header: "ID", width: 10 },
+  { key: "name", header: "Name", width: 20 },
+  { key: "age", header: "Age", width: 10 },
+  { key: "status", header: "Status", width: 15 },
 );
 
 // node, bun, or deno - write to file
-await xlsx.write('users.xlsx');
+await xlsx.write("users.xlsx");
 
 // Browser - trigger download
-await xlsx.download('users.xlsx');
+await xlsx.download("users.xlsx");
 
 // Get raw data
 const buffer = await xlsx.toBuffer(); // Buffer
@@ -60,7 +60,7 @@ const blob = await xlsx.toBlob(); // Browser Blob
 ### Themes
 
 ```typescript
-import { Xldx, themes } from 'xldx';
+import { Xldx, themes } from "xldx";
 
 const xlsx = new Xldx(data);
 xlsx.setTheme(themes.dark);
@@ -70,19 +70,21 @@ xlsx.setTheme(themes.dark);
 
 ```typescript
 xlsx.createSheet(
-  { name: 'StyledSheet' },
+  { name: "StyledSheet" },
   {
-    key: 'status',
-    header: 'Status',
+    key: "status",
+    header: "Status",
     patterns: {
       bgColorPattern: (context) => {
-        if (context.value === 'active') {
-          return { fill: { type: 'pattern', pattern: 'solid', fgColor: '90EE90FF' } };
+        if (context.value === "active") {
+          return {
+            fill: { type: "pattern", pattern: "solid", fgColor: "90EE90FF" },
+          };
         }
         return null;
-      }
-    }
-  }
+      },
+    },
+  },
 );
 ```
 
@@ -90,13 +92,13 @@ xlsx.createSheet(
 
 ```typescript
 xlsx.createSheet(
-  { name: 'ZebraSheet' },
+  { name: "ZebraSheet" },
   {
-    key: 'data',
+    key: "data",
     patterns: {
-      bgColorPattern: 'zebra' // Built-in zebra pattern
-    }
-  }
+      bgColorPattern: "zebra", // Built-in zebra pattern
+    },
+  },
 );
 ```
 

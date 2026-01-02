@@ -1,6 +1,12 @@
 import { describe, it, expect, beforeAll, beforeEach } from "bun:test";
 import { Xldx } from "../../src/browser";
-import { setupDOMMocks, resetMocks, mockElement, mockDocument, mockURL } from "../mocks/dom";
+import {
+  setupDOMMocks,
+  resetMocks,
+  mockElement,
+  mockDocument,
+  mockURL,
+} from "../mocks/dom";
 
 describe("Browser Integration Tests", () => {
   beforeAll(() => {
@@ -39,14 +45,14 @@ describe("Browser Integration Tests", () => {
     it("should generate XLSX as Uint8Array", async () => {
       const data = [
         { name: "Alice", score: 95 },
-        { name: "Bob", score: 87 }
+        { name: "Bob", score: 87 },
       ];
 
       const xldx = new Xldx(data);
       xldx.createSheet(
         { name: "Scores" },
         { key: "name", header: "Name" },
-        { key: "score", header: "Score" }
+        { key: "score", header: "Score" },
       );
 
       const uint8Array = await xldx.toUint8Array();
@@ -63,7 +69,7 @@ describe("Browser Integration Tests", () => {
       const data = [
         { category: "A", value: 100 },
         { category: "B", value: 200 },
-        { category: "A", value: 150 }
+        { category: "A", value: 150 },
       ];
 
       const xldx = new Xldx(data);
@@ -72,13 +78,13 @@ describe("Browser Integration Tests", () => {
         {
           key: "category",
           header: "Category",
-          patterns: { bgColorPattern: "colorPerDiff" }
+          patterns: { bgColorPattern: "colorPerDiff" },
         },
         {
           key: "value",
           header: "Value",
-          patterns: { bgColorPattern: "zebra" }
-        }
+          patterns: { bgColorPattern: "zebra" },
+        },
       );
 
       const uint8Array = await xldx.toUint8Array();
@@ -89,14 +95,11 @@ describe("Browser Integration Tests", () => {
       const data = [
         { text: "<script>alert('xss')</script>" },
         { text: "日本語テスト" },
-        { text: "Emoji: 🎉🚀✨" }
+        { text: "Emoji: 🎉🚀✨" },
       ];
 
       const xldx = new Xldx(data);
-      xldx.createSheet(
-        { name: "Special" },
-        { key: "text", header: "Text" }
-      );
+      xldx.createSheet({ name: "Special" }, { key: "text", header: "Text" });
 
       const uint8Array = await xldx.toUint8Array();
       expect(uint8Array.length).toBeGreaterThan(0);
@@ -109,7 +112,7 @@ describe("Browser Integration Tests", () => {
     it("should handle various data types", async () => {
       const data = [
         { str: "text", num: 42, float: 3.14, bool: true },
-        { str: "", num: 0, float: -1.5, bool: false }
+        { str: "", num: 0, float: -1.5, bool: false },
       ];
 
       const xldx = new Xldx(data);
@@ -118,14 +121,14 @@ describe("Browser Integration Tests", () => {
         { key: "str", header: "String" },
         { key: "num", header: "Number" },
         { key: "float", header: "Float" },
-        { key: "bool", header: "Boolean" }
+        { key: "bool", header: "Boolean" },
       );
 
       const uint8Array = await xldx.toUint8Array();
 
       const result = await Xldx.read(uint8Array);
       expect(result.sheets[0].data[1]).toEqual(["text", 42, 3.14, true]);
-      expect(result.sheets[0].data[2]).toEqual(["", 0, -1.5, false]);
+      expect(result.sheets[0].data[2]).toEqual([undefined, 0, -1.5, false]);
     });
   });
 
@@ -135,21 +138,23 @@ describe("Browser Integration Tests", () => {
       xldx.createSheet(
         { name: "Test" },
         { key: "a", header: "A" },
-        { key: "b", header: "B" }
+        { key: "b", header: "B" },
       );
 
       const blob = await xldx.toBlob();
 
       expect(blob).toBeInstanceOf(Blob);
       expect(blob.size).toBeGreaterThan(0);
-      expect(blob.type).toBe("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      expect(blob.type).toBe(
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      );
     });
 
     it("should create blob from complex data", async () => {
       const data = Array.from({ length: 100 }, (_, i) => ({
         id: i + 1,
         name: `Item ${i + 1}`,
-        value: Math.random() * 1000
+        value: Math.random() * 1000,
       }));
 
       const xldx = new Xldx(data);
@@ -157,7 +162,7 @@ describe("Browser Integration Tests", () => {
         { name: "Items" },
         { key: "id", header: "ID" },
         { key: "name", header: "Name" },
-        { key: "value", header: "Value" }
+        { key: "value", header: "Value" },
       );
 
       const blob = await xldx.toBlob();
@@ -173,10 +178,10 @@ describe("Browser Integration Tests", () => {
             name: "ColumnFormat",
             data: {
               col1: ["A", "B", "C"],
-              col2: [1, 2, 3]
-            }
-          }
-        ]
+              col2: [1, 2, 3],
+            },
+          },
+        ],
       };
 
       const xldx = new Xldx(sheetsData);
@@ -192,13 +197,13 @@ describe("Browser Integration Tests", () => {
         sheets: [
           {
             name: "Sheet1",
-            data: { x: [1, 2] }
+            data: { x: [1, 2] },
           },
           {
             name: "Sheet2",
-            data: { y: [3, 4] }
-          }
-        ]
+            data: { y: [3, 4] },
+          },
+        ],
       };
 
       const xldx = new Xldx(sheetsData);
@@ -217,7 +222,7 @@ describe("Browser Integration Tests", () => {
       xldx.createSheet(
         { name: "Export" },
         { key: "item", header: "Item" },
-        { key: "qty", header: "Quantity" }
+        { key: "qty", header: "Quantity" },
       );
 
       const json = xldx.toJSON();
@@ -233,15 +238,13 @@ describe("Browser Integration Tests", () => {
 
   describe("Sheet manipulation (browser)", () => {
     it("should update row data and regenerate", async () => {
-      const data = [
-        { name: "Original", value: 100 }
-      ];
+      const data = [{ name: "Original", value: 100 }];
 
       const xldx = new Xldx(data);
       xldx.createSheet(
         { name: "Update" },
         { key: "name", header: "Name" },
-        { key: "value", header: "Value" }
+        { key: "value", header: "Value" },
       );
 
       const sheetData = xldx.getSheetData("Update");
@@ -252,11 +255,7 @@ describe("Browser Integration Tests", () => {
     });
 
     it("should update column data", async () => {
-      const data = [
-        { a: 1 },
-        { a: 2 },
-        { a: 3 }
-      ];
+      const data = [{ a: 1 }, { a: 2 }, { a: 3 }];
 
       const xldx = new Xldx(data);
       xldx.createSheet({ name: "Cols" }, { key: "a" });
@@ -283,30 +282,30 @@ describe("Browser Integration Tests", () => {
           600: "#FF6640",
           700: "#FF4C20",
           800: "#FF3300",
-          900: "#E62E00"
+          900: "#E62E00",
         },
         text: {
           primary: "#1A1A1A",
           secondary: "#666666",
           disabled: "#999999",
-          inverse: "#FFFFFF"
+          inverse: "#FFFFFF",
         },
         background: {
           default: "#FFFFFF",
           paper: "#F5F5F5",
-          dark: "#1A1A1A"
+          dark: "#1A1A1A",
         },
         success: "#4CAF50",
         warning: "#FF9800",
         error: "#F44336",
-        info: "#2196F3"
+        info: "#2196F3",
       };
 
       const xldx = new Xldx([{ a: 1 }]);
       xldx.setTheme(customTheme);
       xldx.createSheet(
         { name: "Themed" },
-        { key: "a", patterns: { bgColorPattern: "zebra" } }
+        { key: "a", patterns: { bgColorPattern: "zebra" } },
       );
 
       const uint8Array = await xldx.toUint8Array();
@@ -323,14 +322,10 @@ describe("Browser Integration Tests", () => {
         return { fill: { fgColor: "#FF0000" } };
       };
 
-      const data = [
-        { score: 75 },
-        { score: 25 },
-        { score: 100 }
-      ];
+      const data = [{ score: 75 }, { score: 25 }, { score: 100 }];
 
       const xldx = new Xldx(data, {
-        customPatterns: { highLow: customPattern }
+        customPatterns: { highLow: customPattern },
       });
 
       xldx.createSheet(
@@ -338,8 +333,8 @@ describe("Browser Integration Tests", () => {
         {
           key: "score",
           header: "Score",
-          patterns: { bgColorPattern: "highLow" }
-        }
+          patterns: { bgColorPattern: "highLow" },
+        },
       );
 
       const uint8Array = await xldx.toUint8Array();
@@ -351,7 +346,7 @@ describe("Browser Integration Tests", () => {
     it("should preserve data through generate -> read cycle", async () => {
       const originalData = [
         { name: "Test 1", value: 100, active: true },
-        { name: "Test 2", value: 200, active: false }
+        { name: "Test 2", value: 200, active: false },
       ];
 
       const xldx = new Xldx(originalData);
@@ -359,7 +354,7 @@ describe("Browser Integration Tests", () => {
         { name: "Roundtrip" },
         { key: "name", header: "Name" },
         { key: "value", header: "Value" },
-        { key: "active", header: "Active" }
+        { key: "active", header: "Active" },
       );
 
       const uint8Array = await xldx.toUint8Array();

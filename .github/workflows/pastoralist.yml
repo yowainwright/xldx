@@ -1,0 +1,63 @@
+name: Pastoralist
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 0 * * 6" # Weekly on Saturday at midnight UTC
+
+jobs:
+  pr-check:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check overrides
+        uses: yowainwright/pastoralist@v1
+        with:
+          mode: check
+          fail-on-security: true
+          fail-on-unused: false
+
+  push-check:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update overrides
+        uses: yowainwright/pastoralist@v1
+        with:
+          mode: update
+
+      - name: Check for uncommitted changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::Pastoralist made changes. Run 'pastoralist' locally and commit."
+            git diff
+            exit 1
+          fi
+
+  scheduled-maintenance:
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Maintain overrides
+        id: pastoralist
+        uses: yowainwright/pastoralist@v1
+        with:
+          mode: pr
+          pr-title: "chore(deps): scheduled override maintenance"
+          pr-labels: "dependencies automated"
+
+      - name: Summary
+        if: steps.pastoralist.outputs.pr-url != ''
+        run: echo "Created PR - ${{ steps.pastoralist.outputs.pr-url }}"

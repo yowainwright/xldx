@@ -12,10 +12,15 @@ import {
   buildCellProcessingData,
   processCellData,
   setTheme,
-  buildWorksheetViews
+  buildWorksheetViews,
 } from "../src/utils";
 import { defaultTheme } from "../src/themes";
-import type { PatternContext, DataRow, CellStyle, ColumnDefinition } from "../src";
+import type {
+  PatternContext,
+  DataRow,
+  CellStyle,
+  ColumnDefinition,
+} from "../src";
 
 describe("Pattern Functions", () => {
   describe("zebraBg", () => {
@@ -26,16 +31,16 @@ describe("Pattern Functions", () => {
         value: "test",
         rowData: { col1: "test" },
         allData: [{ col1: "test" }],
-        columnKey: "col1"
+        columnKey: "col1",
       };
-      
+
       const result = zebraBg(context);
       expect(result).toEqual({
         fill: {
           type: "pattern",
           pattern: "solid",
-          fgColor: defaultTheme.base[100]
-        }
+          fgColor: defaultTheme.base[100],
+        },
       });
     });
 
@@ -46,9 +51,9 @@ describe("Pattern Functions", () => {
         value: "test",
         rowData: { col1: "test" },
         allData: [{ col1: "test" }],
-        columnKey: "col1"
+        columnKey: "col1",
       };
-      
+
       const result = zebraBg(context);
       expect(result).toBeNull();
     });
@@ -60,7 +65,7 @@ describe("Pattern Functions", () => {
         { category: "A" },
         { category: "B" },
         { category: "C" },
-        { category: "A" }
+        { category: "A" },
       ];
 
       const contextA: PatternContext = {
@@ -69,7 +74,7 @@ describe("Pattern Functions", () => {
         value: "A",
         rowData: { category: "A" },
         allData,
-        columnKey: "category"
+        columnKey: "category",
       };
 
       const contextB: PatternContext = {
@@ -78,7 +83,7 @@ describe("Pattern Functions", () => {
         value: "B",
         rowData: { category: "B" },
         allData,
-        columnKey: "category"
+        columnKey: "category",
       };
 
       const contextC: PatternContext = {
@@ -87,7 +92,7 @@ describe("Pattern Functions", () => {
         value: "C",
         rowData: { category: "C" },
         allData,
-        columnKey: "category"
+        columnKey: "category",
       };
 
       const resultA = bgColorBasedOnDiff(contextA);
@@ -97,7 +102,7 @@ describe("Pattern Functions", () => {
       expect(resultA?.fill?.fgColor).toBeDefined();
       expect(resultB?.fill?.fgColor).toBeDefined();
       expect(resultC?.fill?.fgColor).toBeDefined();
-      
+
       expect(resultA?.fill?.fgColor).not.toEqual(resultB?.fill?.fgColor);
       expect(resultB?.fill?.fgColor).not.toEqual(resultC?.fill?.fgColor);
       expect(resultA?.fill?.fgColor).not.toEqual(resultC?.fill?.fgColor);
@@ -107,7 +112,7 @@ describe("Pattern Functions", () => {
       const allData: DataRow[] = [
         { category: "A" },
         { category: "B" },
-        { category: "A" }
+        { category: "A" },
       ];
 
       const context1: PatternContext = {
@@ -116,7 +121,7 @@ describe("Pattern Functions", () => {
         value: "A",
         rowData: { category: "A" },
         allData,
-        columnKey: "category"
+        columnKey: "category",
       };
 
       const context2: PatternContext = {
@@ -125,7 +130,7 @@ describe("Pattern Functions", () => {
         value: "A",
         rowData: { category: "A" },
         allData,
-        columnKey: "category"
+        columnKey: "category",
       };
 
       const result1 = bgColorBasedOnDiff(context1);
@@ -138,7 +143,7 @@ describe("Pattern Functions", () => {
       const allData: DataRow[] = [
         { category: null },
         { category: undefined },
-        { category: "A" }
+        { category: "A" },
       ];
 
       const contextNull: PatternContext = {
@@ -147,7 +152,7 @@ describe("Pattern Functions", () => {
         value: null,
         rowData: { category: null },
         allData,
-        columnKey: "category"
+        columnKey: "category",
       };
 
       const contextUndefined: PatternContext = {
@@ -156,7 +161,7 @@ describe("Pattern Functions", () => {
         value: undefined,
         rowData: { category: undefined },
         allData,
-        columnKey: "category"
+        columnKey: "category",
       };
 
       const resultNull = bgColorBasedOnDiff(contextNull);
@@ -182,15 +187,15 @@ describe("Pattern Functions", () => {
         previousValue: "old",
         rowData: { col1: "new" },
         allData: [{ col1: "old" }, { col1: "new" }],
-        columnKey: "col1"
+        columnKey: "col1",
       };
 
       const result = txtColorBasedOnDiff(context);
       expect(result).toEqual({
         font: {
           color: defaultTheme.primary,
-          bold: true
-        }
+          bold: true,
+        },
       });
     });
 
@@ -202,7 +207,7 @@ describe("Pattern Functions", () => {
         previousValue: "same",
         rowData: { col1: "same" },
         allData: [{ col1: "same" }, { col1: "same" }],
-        columnKey: "col1"
+        columnKey: "col1",
       };
 
       const result = txtColorBasedOnDiff(context);
@@ -216,7 +221,7 @@ describe("Pattern Functions", () => {
         value: "first",
         rowData: { col1: "first" },
         allData: [{ col1: "first" }],
-        columnKey: "col1"
+        columnKey: "col1",
       };
 
       const result = txtColorBasedOnDiff(context);
@@ -228,7 +233,11 @@ describe("Pattern Functions", () => {
 describe("Width Calculation", () => {
   describe("createSetWidthBasedOnCharacterCount", () => {
     it("should calculate average width by default", () => {
-      const columnData = ["short", "medium text", "long text with more characters"];
+      const columnData = [
+        "short",
+        "medium text",
+        "long text with more characters",
+      ];
       const calculator = createSetWidthBasedOnCharacterCount(columnData);
       const result = calculator();
 
@@ -240,7 +249,9 @@ describe("Width Calculation", () => {
 
     it("should calculate max width when specified", () => {
       const columnData = ["a", "bb", "ccc", "dddd"];
-      const calculator = createSetWidthBasedOnCharacterCount(columnData, { method: "max" });
+      const calculator = createSetWidthBasedOnCharacterCount(columnData, {
+        method: "max",
+      });
       const result = calculator();
 
       expect(result).toBeDefined();
@@ -249,7 +260,9 @@ describe("Width Calculation", () => {
 
     it("should calculate median width when specified", () => {
       const columnData = ["a", "bb", "ccc", "dddd", "eeeee"];
-      const calculator = createSetWidthBasedOnCharacterCount(columnData, { method: "median" });
+      const calculator = createSetWidthBasedOnCharacterCount(columnData, {
+        method: "median",
+      });
       const result = calculator();
 
       expect(result).toBeDefined();
@@ -260,7 +273,7 @@ describe("Width Calculation", () => {
       const columnData = ["x".repeat(200)];
       const calculator = createSetWidthBasedOnCharacterCount(columnData, {
         minWidth: 20,
-        maxWidth: 50
+        maxWidth: 50,
       });
       const result = calculator();
 
@@ -286,7 +299,9 @@ describe("Width Calculation", () => {
 
     it("should use sample size", () => {
       const columnData = Array(1000).fill("test");
-      const calculator = createSetWidthBasedOnCharacterCount(columnData, { sampleSize: 10 });
+      const calculator = createSetWidthBasedOnCharacterCount(columnData, {
+        sampleSize: 10,
+      });
       const result = calculator();
 
       expect(result).toBeDefined();
@@ -294,19 +309,19 @@ describe("Width Calculation", () => {
 
     it("should apply character width multiplier", () => {
       const columnData = ["test"];
-      const calculator1 = createSetWidthBasedOnCharacterCount(columnData, { 
+      const calculator1 = createSetWidthBasedOnCharacterCount(columnData, {
         charWidth: 1,
-        minWidth: 5
+        minWidth: 5,
       });
-      const calculator2 = createSetWidthBasedOnCharacterCount(columnData, { 
+      const calculator2 = createSetWidthBasedOnCharacterCount(columnData, {
         charWidth: 2,
-        minWidth: 5
+        minWidth: 5,
       });
-      
+
       const result1 = calculator1();
       const result2 = calculator2();
 
-      expect(result2?.width).toBeGreaterThan(result1?.width!);
+      expect(result2!.width).toBeGreaterThan(result1!.width);
     });
   });
 });
@@ -320,12 +335,12 @@ describe("customizeInput", () => {
       value: "exact",
       rowData: { col: "exact" },
       allData: [{ col: "exact" }],
-      columnKey: "col"
+      columnKey: "col",
     };
 
     const result = pattern(context);
     expect(result).toEqual({
-      font: { color: defaultTheme.text.primary }
+      font: { color: defaultTheme.text.primary },
     });
   });
 
@@ -337,7 +352,7 @@ describe("customizeInput", () => {
       value: "different",
       rowData: { col: "different" },
       allData: [{ col: "different" }],
-      columnKey: "col"
+      columnKey: "col",
     };
 
     const result = pattern(context);
@@ -352,12 +367,12 @@ describe("customizeInput", () => {
       value: "test",
       rowData: { col: "test" },
       allData: [{ col: "test" }],
-      columnKey: "col"
+      columnKey: "col",
     };
 
     const result = pattern(context);
     expect(result).toEqual({
-      font: { color: defaultTheme.text.primary }
+      font: { color: defaultTheme.text.primary },
     });
   });
 
@@ -369,12 +384,12 @@ describe("customizeInput", () => {
       value: "test123",
       rowData: { col: "test123" },
       allData: [{ col: "test123" }],
-      columnKey: "col"
+      columnKey: "col",
     };
 
     const result = pattern(context);
     expect(result).toEqual({
-      font: { color: defaultTheme.text.primary }
+      font: { color: defaultTheme.text.primary },
     });
   });
 });
@@ -388,7 +403,7 @@ describe("Pattern Application", () => {
         value: "test",
         rowData: { col: "test" },
         allData: [{ col: "test" }],
-        columnKey: "col"
+        columnKey: "col",
       };
 
       const result = applyPattern("zebra", context);
@@ -397,8 +412,8 @@ describe("Pattern Application", () => {
     });
 
     it("should apply custom pattern", () => {
-      const customPattern = (ctx: PatternContext) => ({
-        font: { color: "#FF0000" }
+      const customPattern = () => ({
+        font: { color: "#FF0000" },
       });
 
       const context: PatternContext = {
@@ -407,16 +422,18 @@ describe("Pattern Application", () => {
         value: "test",
         rowData: { col: "test" },
         allData: [{ col: "test" }],
-        columnKey: "col"
+        columnKey: "col",
       };
 
-      const result = applyPattern("myPattern", context, { myPattern: customPattern });
+      const result = applyPattern("myPattern", context, {
+        myPattern: customPattern,
+      });
       expect(result).toEqual({ font: { color: "#FF0000" } });
     });
 
     it("should apply function pattern directly", () => {
-      const pattern = (ctx: PatternContext) => ({
-        fill: { fgColor: "#00FF00" }
+      const pattern = () => ({
+        fill: { fgColor: "#00FF00" },
       });
 
       const context: PatternContext = {
@@ -425,7 +442,7 @@ describe("Pattern Application", () => {
         value: "test",
         rowData: { col: "test" },
         allData: [{ col: "test" }],
-        columnKey: "col"
+        columnKey: "col",
       };
 
       const result = applyPattern(pattern, context);
@@ -439,7 +456,7 @@ describe("Pattern Application", () => {
         value: "test",
         rowData: { col: "test" },
         allData: [{ col: "test" }],
-        columnKey: "col"
+        columnKey: "col",
       };
 
       const result = applyPattern(undefined, context);
@@ -453,7 +470,7 @@ describe("Pattern Application", () => {
         value: "test",
         rowData: { col: "test" },
         allData: [{ col: "test" }],
-        columnKey: "col"
+        columnKey: "col",
       };
 
       const result = applyPattern("unknown", context);
@@ -471,11 +488,11 @@ describe("Context and Style Utilities", () => {
         rowData: { col1: "A", col2: "B" },
         columnKey: "col2",
         value: "B",
-        allData: [{ col1: "A", col2: "B" }]
+        allData: [{ col1: "A", col2: "B" }],
       };
 
       const context = buildPatternContext(params);
-      
+
       expect(context.rowIndex).toBe(2);
       expect(context.columnIndex).toBe(1);
       expect(context.value).toBe("B");
@@ -492,7 +509,7 @@ describe("Context and Style Utilities", () => {
         columnKey: "col1",
         value: "B",
         previousRowData: { col1: "A" },
-        allData: [{ col1: "A" }, { col1: "B" }]
+        allData: [{ col1: "A" }, { col1: "B" }],
       };
 
       const context = buildPatternContext(params);
@@ -506,7 +523,7 @@ describe("Context and Style Utilities", () => {
         rowData: { col1: "A" },
         columnKey: "col1",
         value: "A",
-        allData: [{ col1: "A" }]
+        allData: [{ col1: "A" }],
       };
 
       const context = buildPatternContext(params);
@@ -518,12 +535,12 @@ describe("Context and Style Utilities", () => {
     it("should return column style when no default", () => {
       const column: ColumnDefinition = {
         key: "col1",
-        style: { font: { bold: true } }
+        style: { font: { bold: true } },
       };
 
       const result = resolveCellStyles({
         column,
-        rowIndex: 0
+        rowIndex: 0,
       });
 
       expect(result).toEqual({ font: { bold: true } });
@@ -532,18 +549,18 @@ describe("Context and Style Utilities", () => {
     it("should merge default and column styles", () => {
       const column: ColumnDefinition = {
         key: "col1",
-        style: { font: { bold: true } }
+        style: { font: { bold: true } },
       };
 
       const defaultStyle: CellStyle = {
         font: { size: 12 },
-        fill: { fgColor: "#EEEEEE" }
+        fill: { fgColor: "#EEEEEE" },
       };
 
       const result = resolveCellStyles({
         column,
         rowIndex: 0,
-        defaultStyle
+        defaultStyle,
       });
 
       expect(result?.font?.bold).toBe(true);
@@ -555,13 +572,13 @@ describe("Context and Style Utilities", () => {
         key: "col1",
         style: { font: { bold: true } },
         rows: {
-          2: { font: { italic: true } }
-        }
+          2: { font: { italic: true } },
+        },
       };
 
       const result = resolveCellStyles({
         column,
-        rowIndex: 0
+        rowIndex: 0,
       });
 
       expect(result).toEqual({ font: { italic: true } });
@@ -569,12 +586,12 @@ describe("Context and Style Utilities", () => {
 
     it("should handle no styles", () => {
       const column: ColumnDefinition = {
-        key: "col1"
+        key: "col1",
       };
 
       const result = resolveCellStyles({
         column,
-        rowIndex: 0
+        rowIndex: 0,
       });
 
       expect(result).toEqual({});
@@ -585,13 +602,10 @@ describe("Context and Style Utilities", () => {
     it("should create processing params for all cells", () => {
       const data: DataRow[] = [
         { col1: "A", col2: "B" },
-        { col1: "C", col2: "D" }
+        { col1: "C", col2: "D" },
       ];
 
-      const columns: ColumnDefinition[] = [
-        { key: "col1" },
-        { key: "col2" }
-      ];
+      const columns: ColumnDefinition[] = [{ key: "col1" }, { key: "col2" }];
 
       const result = buildCellProcessingData(data, columns);
 
@@ -602,7 +616,7 @@ describe("Context and Style Utilities", () => {
         column: { key: "col1" },
         columnIndex: 0,
         allData: data,
-        defaultStyle: undefined
+        defaultStyle: undefined,
       });
     });
 
@@ -626,16 +640,16 @@ describe("Context and Style Utilities", () => {
           key: "col1",
           style: { font: { bold: true } },
           patterns: {
-            bgColorPattern: "zebra"
-          }
+            bgColorPattern: "zebra",
+          },
         },
         columnIndex: 0,
         allData: [{ col1: "A", col2: "B" }],
-        defaultStyle: { font: { size: 11 } }
+        defaultStyle: { font: { size: 11 } },
       };
 
       const result = processCellData(params);
-      
+
       expect(result.rowIndex).toBe(0);
       expect(result.columnIndex).toBe(0);
       expect(result.cellStyle).toBeDefined();
@@ -650,7 +664,7 @@ describe("Theme Management", () => {
   it("should apply custom theme", () => {
     const customTheme = {
       ...defaultTheme,
-      primary: "#FF0000"
+      primary: "#FF0000",
     };
 
     setTheme(customTheme);
@@ -662,7 +676,7 @@ describe("Theme Management", () => {
       previousValue: "old",
       rowData: { col: "new" },
       allData: [{ col: "old" }, { col: "new" }],
-      columnKey: "col"
+      columnKey: "col",
     };
 
     const result = txtColorBasedOnDiff(context);
@@ -680,7 +694,7 @@ describe("buildWorksheetViews", () => {
 
   it("should create frozen pane view", () => {
     const result = buildWorksheetViews({
-      freezePane: { row: 1, column: 0 }
+      freezePane: { row: 1, column: 0 },
     });
 
     expect(result).toBeDefined();
@@ -692,7 +706,7 @@ describe("buildWorksheetViews", () => {
 
   it("should create view with showGridLines option", () => {
     const result = buildWorksheetViews({
-      showGridLines: false
+      showGridLines: false,
     });
 
     expect(result).toBeDefined();
@@ -701,7 +715,7 @@ describe("buildWorksheetViews", () => {
 
   it("should create view with showRowColHeaders option", () => {
     const result = buildWorksheetViews({
-      showRowColHeaders: false
+      showRowColHeaders: false,
     });
 
     expect(result).toBeDefined();
@@ -712,7 +726,7 @@ describe("buildWorksheetViews", () => {
     const result = buildWorksheetViews({
       freezePane: { row: 2, column: 1 },
       showGridLines: true,
-      showRowColHeaders: false
+      showRowColHeaders: false,
     });
 
     expect(result).toBeDefined();
@@ -725,7 +739,7 @@ describe("buildWorksheetViews", () => {
 
   it("should handle showGridLines true explicitly", () => {
     const result = buildWorksheetViews({
-      showGridLines: true
+      showGridLines: true,
     });
 
     expect(result).toBeDefined();
