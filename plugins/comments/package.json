@@ -1,0 +1,36 @@
+{
+  "name": "@xldx/comments",
+  "version": "0.0.1",
+  "description": "Comments plugin for xldx - add notes and comments to Excel cells",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun build src/index.ts --outfile dist/index.js --target browser && tsc --emitDeclarationOnly --outDir dist",
+    "test": "bun test"
+  },
+  "peerDependencies": {
+    "xldx": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5"
+  },
+  "keywords": [
+    "excel",
+    "xlsx",
+    "comments",
+    "notes",
+    "xldx",
+    "plugin"
+  ],
+  "license": "Elastic-2.0"
+}

@@ -1,11 +1,9 @@
+import type { ColorTheme } from "./themes";
 import type {
   PatternContext,
   PatternFunction,
   CellStyle,
   ColumnDefinition,
-} from "./schemas";
-import type { ColorTheme } from "./themes";
-import type {
   WidthCalculationOptions,
   TextMatch,
   WidthResult,

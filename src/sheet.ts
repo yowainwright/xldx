@@ -4,8 +4,9 @@ import type {
   CellStyle,
   PatternFunction,
   PatternContext,
-} from "./schemas";
-import type { DataRow, ColumnData } from "./types";
+  DataRow,
+  ColumnData,
+} from "./types";
 import {
   applyPattern,
   buildPatternContext,

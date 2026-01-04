@@ -15,6 +15,36 @@
         "typescript": "5.8.3",
       },
     },
+    "plugins/comments": {
+      "name": "@xldx/comments",
+      "version": "0.0.1",
+      "devDependencies": {
+        "typescript": "^5",
+      },
+      "peerDependencies": {
+        "xldx": "*",
+      },
+    },
+    "plugins/conditional-formatting": {
+      "name": "@xldx/conditional-formatting",
+      "version": "0.0.1",
+      "devDependencies": {
+        "typescript": "^5",
+      },
+      "peerDependencies": {
+        "xldx": "*",
+      },
+    },
+    "plugins/images": {
+      "name": "@xldx/images",
+      "version": "0.0.1",
+      "devDependencies": {
+        "typescript": "^5",
+      },
+      "peerDependencies": {
+        "xldx": "*",
+      },
+    },
     "plugins/validation": {
       "name": "@xldx/validation",
       "version": "0.0.1",
@@ -128,6 +158,12 @@
     "@types/parse-path": ["@types/parse-path@7.1.0", "", { "dependencies": { "parse-path": "*" } }, "sha512-EULJ8LApcVEPbrfND0cRQqutIOdiIgJ1Mgrhpy755r14xMohPTEpkV/k28SJvuOs9bHRFW8x+KeDAEPiGQPB9Q=="],
 
     "@types/tinycolor2": ["@types/tinycolor2@1.4.6", "", {}, "sha512-iEN8J0BoMnsWBqjVbWH/c0G0Hh7O21lpR2/+PrvAVgWdzL7eexIFm4JN/Wn10PTcmNdtS6U67r499mlWMXOxNw=="],
+
+    "@xldx/comments": ["@xldx/comments@workspace:plugins/comments"],
+
+    "@xldx/conditional-formatting": ["@xldx/conditional-formatting@workspace:plugins/conditional-formatting"],
+
+    "@xldx/images": ["@xldx/images@workspace:plugins/images"],
 
     "@xldx/validation": ["@xldx/validation@workspace:plugins/validation"],
 

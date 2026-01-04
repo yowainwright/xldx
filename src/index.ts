@@ -6,7 +6,7 @@ import type {
   SheetOptions,
   XldxOptions,
   PatternFunction,
-} from "./schemas";
+} from "./types";
 import type { ColorTheme } from "./themes";
 import type {
   DataRow,
@@ -15,9 +15,9 @@ import type {
   SheetDataAPI,
   SerializedWorkbook,
   SerializedSheet,
+  XldxPlugin,
 } from "./types";
 import type { WorkbookData, WorkbookDataWithStyles } from "./xlsx/types";
-import type { XldxPlugin } from "./plugins/types";
 import {
   setTheme,
   zebraBg,
@@ -28,10 +28,8 @@ import {
   customizeInput,
 } from "./utils";
 
-export * from "./schemas";
 export * from "./themes";
 export * from "./types";
-export * from "./plugins";
 export { Sheet } from "./sheet";
 
 export class Xldx {
