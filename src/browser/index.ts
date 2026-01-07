@@ -7,17 +7,19 @@ declare module "../index" {
   }
 }
 
-Xldx.prototype.toBlob = async function(): Promise<Blob> {
+Xldx.prototype.toBlob = async function (): Promise<Blob> {
   const uint8Array = await this.toUint8Array();
-  return new Blob([uint8Array], { 
-    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+  return new Blob([uint8Array], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   });
 };
 
-Xldx.prototype.download = async function(filename: string = 'download.xlsx'): Promise<void> {
+Xldx.prototype.download = async function (
+  filename: string = "download.xlsx",
+): Promise<void> {
   const blob = await this.toBlob();
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const a = document.createElement("a");
   a.href = url;
   a.download = filename;
   document.body.appendChild(a);

@@ -1,0 +1,200 @@
+---
+title: Conditional Formatting Plugin
+description: Add color scales, data bars, and icon sets to Excel worksheets
+order: 13
+---
+
+# Conditional Formatting Plugin
+
+Add conditional formatting rules including color scales, data bars, icon sets, and cell value rules.
+
+## Installation
+
+```bash
+bun add @xldx/conditional-formatting
+```
+
+## Usage
+
+```typescript
+import { Xldx } from 'xldx';
+import { conditionalFormattingPlugin, addRule } from '@xldx/conditional-formatting';
+
+const plugin = conditionalFormattingPlugin();
+
+const xldx = new Xldx(data)
+  .use(plugin)
+  .createSheet({ name: 'Sales' }, ...columns);
+
+// Color scale (red to green)
+addRule(plugin, {
+  type: 'colorScale',
+  range: 'B2:B100',
+  colors: ['#FF0000', '#FFFF00', '#00FF00']
+});
+
+// Data bars
+addRule(plugin, {
+  type: 'dataBar',
+  range: 'C2:C100',
+  color: '#638EC6'
+});
+
+const xlsx = await xldx.toUint8Array();
+```
+
+## Rule Types
+
+### Color Scale
+
+Apply a gradient of colors based on cell values.
+
+```typescript
+// 2-color scale
+addRule(plugin, {
+  type: 'colorScale',
+  range: 'A1:A10',
+  colors: ['#FF0000', '#00FF00']  // red to green
+});
+
+// 3-color scale
+addRule(plugin, {
+  type: 'colorScale',
+  range: 'A1:A10',
+  colors: ['#FF0000', '#FFFF00', '#00FF00']  // red to yellow to green
+});
+```
+
+### Data Bar
+
+Display horizontal bars proportional to cell values.
+
+```typescript
+addRule(plugin, {
+  type: 'dataBar',
+  range: 'B1:B10',
+  color: '#638EC6',
+  showValue: true  // optional, default true
+});
+```
+
+### Icon Set
+
+Display icons based on value thresholds.
+
+```typescript
+addRule(plugin, {
+  type: 'iconSet',
+  range: 'C1:C10',
+  iconSet: '3Arrows'
+});
+```
+
+Available icon sets:
+
+| 3-Icon Sets | 4-Icon Sets | 5-Icon Sets |
+|-------------|-------------|-------------|
+| 3Arrows | 4Arrows | 5Arrows |
+| 3ArrowsGray | 4ArrowsGray | 5ArrowsGray |
+| 3Flags | 4Rating | 5Rating |
+| 3TrafficLights1 | 4RedToBlack | 5Quarters |
+| 3TrafficLights2 | 4TrafficLights | |
+| 3Signs | | |
+| 3Symbols | | |
+| 3Symbols2 | | |
+
+### Cell Value Rules
+
+Apply formatting based on cell value comparisons.
+
+```typescript
+addRule(plugin, {
+  type: 'cellIs',
+  range: 'D1:D10',
+  operator: 'greaterThan',
+  value: 100,
+  style: {
+    bgColor: '#FF0000',
+    fontColor: '#FFFFFF',
+    bold: true,
+    italic: false
+  }
+});
+```
+
+Operators: `equal`, `notEqual`, `greaterThan`, `lessThan`, `greaterThanOrEqual`, `lessThanOrEqual`, `between`, `notBetween`
+
+For `between` and `notBetween`, provide both `value` and `value2`:
+
+```typescript
+addRule(plugin, {
+  type: 'cellIs',
+  range: 'D1:D10',
+  operator: 'between',
+  value: 50,
+  value2: 100,
+  style: { bgColor: '#FFFF00' }
+});
+```
+
+### Expression Rules
+
+Apply formatting based on a formula.
+
+```typescript
+addRule(plugin, {
+  type: 'expression',
+  range: 'E1:E10',
+  formula: '$A1>10',
+  style: { bgColor: '#FFFF00' }
+});
+```
+
+## Examples
+
+### Sales Dashboard
+
+```typescript
+// Highlight top performers
+addRule(plugin, {
+  type: 'colorScale',
+  range: 'C2:C50',
+  colors: ['#FFCCCC', '#CCFFCC']
+});
+
+// Show progress bars
+addRule(plugin, {
+  type: 'dataBar',
+  range: 'D2:D50',
+  color: '#5B9BD5'
+});
+
+// Status indicators
+addRule(plugin, {
+  type: 'iconSet',
+  range: 'E2:E50',
+  iconSet: '3TrafficLights1'
+});
+```
+
+### Threshold Alerts
+
+```typescript
+// Red for values below target
+addRule(plugin, {
+  type: 'cellIs',
+  range: 'B2:B100',
+  operator: 'lessThan',
+  value: 80,
+  style: { bgColor: '#FFCCCC', fontColor: '#990000' }
+});
+
+// Green for values above target
+addRule(plugin, {
+  type: 'cellIs',
+  range: 'B2:B100',
+  operator: 'greaterThanOrEqual',
+  value: 100,
+  style: { bgColor: '#CCFFCC', fontColor: '#006600' }
+});
+```

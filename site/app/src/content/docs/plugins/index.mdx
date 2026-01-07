@@ -1,0 +1,81 @@
+---
+title: Plugins
+description: Extend xldx with optional plugins for images, comments, validation, and more
+order: 10
+---
+
+# Plugins
+
+xldx uses a plugin architecture to keep the core library lightweight while providing optional features. Each plugin is a separate package that you install only when needed.
+
+## Available Plugins
+
+| Plugin | Package | Description |
+|--------|---------|-------------|
+| [Images](/docs/plugins/images) | `@xldx/images` | Embed PNG, JPEG, GIF images |
+| [Comments](/docs/plugins/comments) | `@xldx/comments` | Add cell comments and notes |
+| [Conditional Formatting](/docs/plugins/conditional-formatting) | `@xldx/conditional-formatting` | Color scales, data bars, icon sets |
+| [Validation](/docs/plugins/validation) | `@xldx/validation` | Dropdowns, numeric constraints |
+
+## Using Plugins
+
+All plugins follow the same pattern:
+
+```typescript
+import { Xldx } from 'xldx';
+import { somePlugin, addSomething } from '@xldx/some-plugin';
+
+// 1. Create plugin instance
+const plugin = somePlugin();
+
+// 2. Register with xldx using .use()
+const xldx = new Xldx(data)
+  .use(plugin)
+  .createSheet({ name: 'Sheet1' }, ...columns);
+
+// 3. Add plugin-specific content
+addSomething(plugin, { /* options */ });
+
+// 4. Generate as usual
+const xlsx = await xldx.toUint8Array();
+```
+
+## Plugin Architecture
+
+Plugins implement the `XldxPlugin` interface:
+
+```typescript
+interface XldxPlugin {
+  name: string;
+  version: string;
+  beforeGenerate?(context: WorkbookContext): void;
+  afterGenerate?(files: Map<string, string | Uint8Array>): void;
+  getContentTypes?(): readonly string[];
+  getRelationships?(): readonly Relationship[];
+}
+```
+
+### Lifecycle Hooks
+
+- **beforeGenerate** - Called before XML generation. Access worksheets and add files.
+- **afterGenerate** - Called after XML generation, before zipping. Modify or add files.
+- **getContentTypes** - Return additional content type declarations.
+- **getRelationships** - Return additional workbook relationships.
+
+## Creating Custom Plugins
+
+```typescript
+import type { XldxPlugin, WorkbookContext } from 'xldx';
+
+export function myPlugin(): XldxPlugin {
+  return {
+    name: 'my-plugin',
+    version: '1.0.0',
+
+    afterGenerate(files: Map<string, string | Uint8Array>): void {
+      // Modify generated files or add new ones
+      files.set('xl/custom.xml', '<custom>data</custom>');
+    }
+  };
+}
+```

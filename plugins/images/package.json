@@ -1,0 +1,37 @@
+{
+  "name": "@xldx/images",
+  "version": "0.0.1",
+  "description": "Images plugin for xldx - embed images in Excel worksheets",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun build src/index.ts --outfile dist/index.js --target browser && tsc --emitDeclarationOnly --outDir dist",
+    "test": "bun test"
+  },
+  "peerDependencies": {
+    "xldx": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5"
+  },
+  "keywords": [
+    "excel",
+    "xlsx",
+    "images",
+    "pictures",
+    "drawings",
+    "xldx",
+    "plugin"
+  ],
+  "license": "O'Sassy"
+}

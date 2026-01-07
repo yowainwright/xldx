@@ -6,7 +6,7 @@ import {
   txtColorBasedOnDiff,
   createSetWidthBasedOnCharacterCount,
   applyPattern,
-  buildPatternContext
+  buildPatternContext,
 } from "../src/utils";
 import { defaultTheme } from "../src/themes";
 import type { PatternContext, DataRow, ColorTheme } from "../src";
@@ -17,7 +17,7 @@ describe("index", () => {
       const data = [
         { name: "Alice", age: 30, city: "NYC" },
         { name: "Bob", age: 25, city: "LA" },
-        { name: "Charlie", age: 35, city: "Chicago" }
+        { name: "Charlie", age: 35, city: "Chicago" },
       ];
 
       const xldx = new Xldx(data);
@@ -25,7 +25,7 @@ describe("index", () => {
         { name: "People" },
         { key: "name", header: "Name" },
         { key: "age", header: "Age" },
-        { key: "city", header: "City" }
+        { key: "city", header: "City" },
       );
 
       const sheetData = xldx.getSheetData("People");
@@ -38,14 +38,14 @@ describe("index", () => {
       const data = [
         { name: "Alice", age: 30 },
         { name: "Bob", age: 25 },
-        { name: "Charlie", age: 35 }
+        { name: "Charlie", age: 35 },
       ];
 
       const xldx = new Xldx(data);
       xldx.createSheet(
         { name: "People" },
         { key: "name", header: "Name" },
-        { key: "age", header: "Age" }
+        { key: "age", header: "Age" },
       );
 
       const sheetData = xldx.getSheetData("People");
@@ -53,7 +53,7 @@ describe("index", () => {
 
       expect(columnData).toEqual({
         name: ["Alice", "Bob", "Charlie"],
-        age: [30, 25, 35]
+        age: [30, 25, 35],
       });
     });
 
@@ -63,7 +63,7 @@ describe("index", () => {
 
       const xldx = new Xldx(data1);
       xldx.createSheet({ name: "Sheet1" }, { key: "a", header: "A" });
-      
+
       const xldx2 = new Xldx(data2);
       xldx2.createSheet({ name: "Sheet2" }, { key: "b", header: "B" });
 
@@ -77,14 +77,14 @@ describe("index", () => {
     it("should update row data", () => {
       const data = [
         { name: "Alice", age: 30 },
-        { name: "Bob", age: 25 }
+        { name: "Bob", age: 25 },
       ];
 
       const xldx = new Xldx(data);
       xldx.createSheet(
         { name: "People" },
         { key: "name", header: "Name" },
-        { key: "age", header: "Age" }
+        { key: "age", header: "Age" },
       );
 
       const sheetData = xldx.getSheetData("People");
@@ -99,14 +99,14 @@ describe("index", () => {
       const data = [
         { name: "Alice", age: 30 },
         { name: "Bob", age: 25 },
-        { name: "Charlie", age: 35 }
+        { name: "Charlie", age: 35 },
       ];
 
       const xldx = new Xldx(data);
       xldx.createSheet(
         { name: "People" },
         { key: "name", header: "Name" },
-        { key: "age", header: "Age" }
+        { key: "age", header: "Age" },
       );
 
       const sheetData = xldx.getSheetData("People");
@@ -120,7 +120,9 @@ describe("index", () => {
       const xldx = new Xldx([]);
       xldx.createSheet({ name: "Sheet1" }, { key: "a", header: "A" });
 
-      expect(() => xldx.getSheetData("NonExistent")).toThrow("Sheet NonExistent not found");
+      expect(() => xldx.getSheetData("NonExistent")).toThrow(
+        "Sheet NonExistent not found",
+      );
       expect(() => xldx.getSheetData(5)).toThrow("Sheet at index 5 not found");
     });
 
@@ -129,7 +131,7 @@ describe("index", () => {
       xldx.createSheet(
         { name: "Sheet1" },
         { key: "a", header: "A" },
-        { key: "b", header: "B" }
+        { key: "b", header: "B" },
       );
 
       const sheet1 = xldx.getSheetData("Sheet1");
@@ -144,19 +146,19 @@ describe("index", () => {
       const context: PatternContext = {
         rowIndex: 2,
         columnIndex: 0,
-        value: 'test',
-        rowData: { col1: 'test' },
-        allData: [{ col1: 'test' }],
-        columnKey: 'col1'
+        value: "test",
+        rowData: { col1: "test" },
+        allData: [{ col1: "test" }],
+        columnKey: "col1",
       };
-      
+
       const result = zebraBg(context);
       expect(result).toEqual({
         fill: {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: defaultTheme.base[100]
-        }
+          type: "pattern",
+          pattern: "solid",
+          fgColor: defaultTheme.base[100],
+        },
       });
     });
 
@@ -164,40 +166,40 @@ describe("index", () => {
       const context: PatternContext = {
         rowIndex: 3,
         columnIndex: 0,
-        value: 'test',
-        rowData: { col1: 'test' },
-        allData: [{ col1: 'test' }],
-        columnKey: 'col1'
+        value: "test",
+        rowData: { col1: "test" },
+        allData: [{ col1: "test" }],
+        columnKey: "col1",
       };
-      
+
       const result = zebraBg(context);
       expect(result).toBeNull();
     });
 
     it("should assign different colors to different values", () => {
       const allData: DataRow[] = [
-        { category: 'A' },
-        { category: 'B' },
-        { category: 'A' },
-        { category: 'C' }
+        { category: "A" },
+        { category: "B" },
+        { category: "A" },
+        { category: "C" },
       ];
 
       const contextA: PatternContext = {
         rowIndex: 1,
         columnIndex: 0,
-        value: 'A',
-        rowData: { category: 'A' },
+        value: "A",
+        rowData: { category: "A" },
         allData,
-        columnKey: 'category'
+        columnKey: "category",
       };
 
       const contextB: PatternContext = {
         rowIndex: 2,
         columnIndex: 0,
-        value: 'B',
-        rowData: { category: 'B' },
+        value: "B",
+        rowData: { category: "B" },
         allData,
-        columnKey: 'category'
+        columnKey: "category",
       };
 
       const resultA = bgColorBasedOnDiff(contextA);
@@ -212,24 +214,28 @@ describe("index", () => {
       const context: PatternContext = {
         rowIndex: 2,
         columnIndex: 0,
-        value: 'new',
-        previousValue: 'old',
-        rowData: { col1: 'new' },
-        allData: [{ col1: 'old' }, { col1: 'new' }],
-        columnKey: 'col1'
+        value: "new",
+        previousValue: "old",
+        rowData: { col1: "new" },
+        allData: [{ col1: "old" }, { col1: "new" }],
+        columnKey: "col1",
       };
 
       const result = txtColorBasedOnDiff(context);
       expect(result).toEqual({
         font: {
           color: defaultTheme.primary,
-          bold: true
-        }
+          bold: true,
+        },
       });
     });
 
     it("should calculate column width from data", () => {
-      const columnData = ['short', 'medium text', 'long text with more characters'];
+      const columnData = [
+        "short",
+        "medium text",
+        "long text with more characters",
+      ];
       const calculator = createSetWidthBasedOnCharacterCount(columnData);
       const result = calculator();
 
@@ -240,74 +246,74 @@ describe("index", () => {
 
     it("should apply patterns when creating sheets", async () => {
       const data = [
-        { name: 'Alice', score: 95 },
-        { name: 'Bob', score: 87 },
-        { name: 'Charlie', score: 95 }
+        { name: "Alice", score: 95 },
+        { name: "Bob", score: 87 },
+        { name: "Charlie", score: 95 },
       ];
 
       const xldx = new Xldx(data);
-      
+
       xldx.createSheet(
-        { name: 'Scores' },
+        { name: "Scores" },
         {
-          key: 'name',
-          header: 'Name',
+          key: "name",
+          header: "Name",
           patterns: {
-            bgColorPattern: 'zebra'
-          }
+            bgColorPattern: "zebra",
+          },
         },
         {
-          key: 'score',
-          header: 'Score',
+          key: "score",
+          header: "Score",
           patterns: {
-            bgColorPattern: 'colorPerDiff'
-          }
-        }
+            bgColorPattern: "colorPerDiff",
+          },
+        },
       );
 
       const sheetData = xldx.getSheetData(0);
       const rows = sheetData.getRowsData();
-      
+
       expect(rows).toHaveLength(3);
-      expect(rows[0]).toEqual({ name: 'Alice', score: 95 });
+      expect(rows[0]).toEqual({ name: "Alice", score: 95 });
     });
 
     it("should apply pattern by name or function", () => {
       const context: PatternContext = {
         rowIndex: 2,
         columnIndex: 0,
-        value: 'test',
-        rowData: { col1: 'test' },
-        allData: [{ col1: 'test' }],
-        columnKey: 'col1'
+        value: "test",
+        rowData: { col1: "test" },
+        allData: [{ col1: "test" }],
+        columnKey: "col1",
       };
 
-      const result = applyPattern('zebra', context);
+      const result = applyPattern("zebra", context);
       expect(result).toBeDefined();
 
-      const customPattern = (ctx: PatternContext) => ({
-        font: { color: '#FF0000' }
+      const customPattern = () => ({
+        font: { color: "#FF0000" },
       });
 
       const customResult = applyPattern(customPattern, context);
-      expect(customResult).toEqual({ font: { color: '#FF0000' } });
+      expect(customResult).toEqual({ font: { color: "#FF0000" } });
     });
 
     it("should build pattern context with proper offsets", () => {
       const params = {
         rowIndex: 0,
         colIndex: 1,
-        rowData: { col1: 'A', col2: 'B' },
-        columnKey: 'col2',
-        value: 'B',
-        allData: [{ col1: 'A', col2: 'B' }]
+        rowData: { col1: "A", col2: "B" },
+        columnKey: "col2",
+        value: "B",
+        allData: [{ col1: "A", col2: "B" }],
       };
 
       const context = buildPatternContext(params);
       expect(context.rowIndex).toBe(2);
       expect(context.columnIndex).toBe(1);
-      expect(context.value).toBe('B');
-      expect(context.columnKey).toBe('col2');
+      expect(context.value).toBe("B");
+      expect(context.columnKey).toBe("col2");
     });
   });
 
@@ -316,7 +322,7 @@ describe("index", () => {
       it("should set a custom theme and return this for chaining", () => {
         const customTheme: ColorTheme = {
           ...defaultTheme,
-          primary: "#FF0000"
+          primary: "#FF0000",
         };
 
         const xldx = new Xldx([{ a: 1 }]);
@@ -341,7 +347,7 @@ describe("index", () => {
         const xldx = new Xldx([]);
         const definitions = [
           { key: "col1", header: "Column 1" },
-          { key: "col2", header: "Column 2" }
+          { key: "col2", header: "Column 2" },
         ];
 
         const result = xldx.createColumns(definitions);
@@ -353,19 +359,19 @@ describe("index", () => {
       it("should create multiple sheets at once", () => {
         const data = [
           { name: "Alice", age: 30 },
-          { name: "Bob", age: 25 }
+          { name: "Bob", age: 25 },
         ];
 
         const xldx = new Xldx(data);
         xldx.createSheets([
           {
             options: { name: "Sheet1" },
-            columns: [{ key: "name", header: "Name" }]
+            columns: [{ key: "name", header: "Name" }],
           },
           {
             options: { name: "Sheet2" },
-            columns: [{ key: "age", header: "Age" }]
-          }
+            columns: [{ key: "age", header: "Age" }],
+          },
         ]);
 
         const sheet1 = xldx.getSheetData("Sheet1");
@@ -380,14 +386,14 @@ describe("index", () => {
       it("should export workbook as JSON", () => {
         const data = [
           { name: "Alice", score: 95 },
-          { name: "Bob", score: 87 }
+          { name: "Bob", score: 87 },
         ];
 
         const xldx = new Xldx(data);
         xldx.createSheet(
           { name: "Scores" },
           { key: "name", header: "Name" },
-          { key: "score", header: "Score" }
+          { key: "score", header: "Score" },
         );
 
         const json = xldx.toJSON();
@@ -419,9 +425,9 @@ describe("index", () => {
             {
               name: "TestSheet",
               data: [["Header"], ["Value"]],
-              columnWidths: [20]
-            }
-          ]
+              columnWidths: [20],
+            },
+          ],
         };
 
         const xldx = Xldx.fromJSON(json);
@@ -445,14 +451,14 @@ describe("index", () => {
       it("should read XLSX data from Uint8Array", async () => {
         const data = [
           { name: "Alice", age: 30 },
-          { name: "Bob", age: 25 }
+          { name: "Bob", age: 25 },
         ];
 
         const xldx = new Xldx(data);
         xldx.createSheet(
           { name: "People" },
           { key: "name", header: "Name" },
-          { key: "age", header: "Age" }
+          { key: "age", header: "Age" },
         );
 
         const uint8Array = await xldx.toUint8Array();
@@ -531,7 +537,9 @@ describe("index", () => {
         const xldx = new Xldx([{ item: "download" }]);
         xldx.createSheet({ name: "Download" }, { key: "item" });
 
-        const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), "xldx-download-"));
+        const tempDir = await fs.mkdtemp(
+          path.join(os.tmpdir(), "xldx-download-"),
+        );
         const filePath = path.join(tempDir, "download.xlsx");
 
         await xldx.download(filePath);
@@ -543,6 +551,173 @@ describe("index", () => {
       });
     });
 
+    describe("Plugins", () => {
+      it("should register a plugin with use()", () => {
+        const xldx = new Xldx([{ a: 1 }]);
+
+        const plugin = {
+          name: "test-plugin",
+          version: "1.0.0",
+        };
+
+        const result = xldx.use(plugin);
+        expect(result).toBe(xldx);
+        expect(xldx.getPlugins()).toContain(plugin);
+      });
+
+      it("should return empty array when no plugins registered", () => {
+        const xldx = new Xldx([]);
+        expect(xldx.getPlugins()).toEqual([]);
+      });
+
+      it("should register multiple plugins", () => {
+        const xldx = new Xldx([]);
+
+        const plugin1 = { name: "plugin-1", version: "1.0.0" };
+        const plugin2 = { name: "plugin-2", version: "2.0.0" };
+
+        xldx.use(plugin1).use(plugin2);
+
+        expect(xldx.getPlugins()).toHaveLength(2);
+        expect(xldx.getPlugins()).toContain(plugin1);
+        expect(xldx.getPlugins()).toContain(plugin2);
+      });
+    });
+
+    describe("toUint8ArrayCompressed", () => {
+      it("should generate compressed XLSX", async () => {
+        const xldx = new Xldx([{ a: 1 }, { a: 2 }]);
+        xldx.createSheet({ name: "Test" }, { key: "a" });
+
+        const compressed = await xldx.toUint8ArrayCompressed();
+
+        expect(compressed).toBeInstanceOf(Uint8Array);
+        expect(compressed.length).toBeGreaterThan(0);
+        expect(compressed[0]).toBe(0x50);
+        expect(compressed[1]).toBe(0x4b);
+      });
+
+      it("should produce smaller output for repetitive content", async () => {
+        const data = Array(100).fill({ value: "repeated" });
+        const xldx = new Xldx(data);
+        xldx.createSheet({ name: "Large" }, { key: "value" });
+
+        const uncompressed = await xldx.toUint8Array();
+        const compressed = await xldx.toUint8ArrayCompressed();
+
+        expect(compressed.length).toBeLessThan(uncompressed.length);
+      });
+    });
+
+    describe("Style methods", () => {
+      it("should get row styles", () => {
+        const data = [{ name: "Alice" }, { name: "Bob" }];
+        const xldx = new Xldx(data);
+        xldx.createSheet({ name: "Test" }, { key: "name", header: "Name" });
+
+        const sheetData = xldx.getSheetData("Test");
+        const styles = sheetData.getRowStyles(0);
+
+        expect(styles).toBeDefined();
+      });
+
+      it("should get column styles", () => {
+        const data = [{ name: "Alice" }];
+        const xldx = new Xldx(data);
+        xldx.createSheet({ name: "Test" }, { key: "name", header: "Name" });
+
+        const sheetData = xldx.getSheetData("Test");
+        const styles = sheetData.getColumnStyles("name");
+
+        expect(styles).toBeDefined();
+      });
+
+      it("should update row styles", () => {
+        const data = [{ name: "Alice" }];
+        const xldx = new Xldx(data);
+        xldx.createSheet({ name: "Test" }, { key: "name", header: "Name" });
+
+        const sheetData = xldx.getSheetData("Test");
+        sheetData.updateRowStyles(0, { font: { bold: true } });
+
+        const styles = sheetData.getRowStyles(0);
+        expect(styles).toBeDefined();
+      });
+
+      it("should update column styles", () => {
+        const data = [{ name: "Alice" }];
+        const xldx = new Xldx(data);
+        xldx.createSheet({ name: "Test" }, { key: "name", header: "Name" });
+
+        const sheetData = xldx.getSheetData("Test");
+        sheetData.updateColumnStyles("name", { font: { italic: true } });
+
+        const styles = sheetData.getColumnStyles("name");
+        expect(styles).toBeDefined();
+      });
+    });
+
+    describe("readWithStyles", () => {
+      it("should read XLSX with styles from Uint8Array", async () => {
+        const data = [{ name: "Alice", age: 30 }];
+        const xldx = new Xldx(data);
+        xldx.createSheet(
+          { name: "Styled" },
+          { key: "name", header: "Name" },
+          { key: "age", header: "Age" },
+        );
+
+        const uint8Array = await xldx.toUint8Array();
+        const result = Xldx.readWithStyles(uint8Array);
+
+        expect(result.sheets).toHaveLength(1);
+        expect(result.sheets[0].name).toBe("Styled");
+        expect(result.sheets[0].data[0][0].value).toBe("Name");
+      });
+
+      it("should read XLSX with styles from Buffer", async () => {
+        const data = [{ value: "test" }];
+        const xldx = new Xldx(data);
+        xldx.createSheet({ name: "Test" }, { key: "value" });
+
+        const uint8Array = await xldx.toUint8Array();
+        const buffer = Buffer.from(uint8Array);
+        const result = Xldx.readWithStyles(buffer);
+
+        expect(result.sheets).toHaveLength(1);
+      });
+    });
+
+    describe("readWithStylesAsync", () => {
+      it("should read XLSX with styles asynchronously", async () => {
+        const data = [{ name: "Bob", score: 95 }];
+        const xldx = new Xldx(data);
+        xldx.createSheet(
+          { name: "AsyncStyled" },
+          { key: "name", header: "Name" },
+          { key: "score", header: "Score" },
+        );
+
+        const uint8Array = await xldx.toUint8Array();
+        const result = await Xldx.readWithStylesAsync(uint8Array);
+
+        expect(result.sheets).toHaveLength(1);
+        expect(result.sheets[0].name).toBe("AsyncStyled");
+      });
+
+      it("should handle Buffer input async", async () => {
+        const data = [{ x: 1 }];
+        const xldx = new Xldx(data);
+        xldx.createSheet({ name: "Buf" }, { key: "x" });
+
+        const uint8Array = await xldx.toUint8Array();
+        const buffer = Buffer.from(uint8Array);
+        const result = await Xldx.readWithStylesAsync(buffer);
+
+        expect(result.sheets).toHaveLength(1);
+      });
+    });
+
     describe("Multi-sheet data (SheetsData)", () => {
       it("should build sheets from SheetsData structure", () => {
         const sheetsData = {
@@ -551,17 +726,17 @@ describe("index", () => {
               name: "Sheet1",
               data: {
                 col1: ["A", "B", "C"],
-                col2: [1, 2, 3]
-              }
+                col2: [1, 2, 3],
+              },
             },
             {
               name: "Sheet2",
               data: {
                 x: ["X", "Y"],
-                y: [10, 20]
-              }
-            }
-          ]
+                y: [10, 20],
+              },
+            },
+          ],
         };
 
         const xldx = new Xldx(sheetsData);
@@ -580,10 +755,10 @@ describe("index", () => {
               name: "Test",
               data: {
                 name: ["Alice", "Bob"],
-                age: [30, 25]
-              }
-            }
-          ]
+                age: [30, 25],
+              },
+            },
+          ],
         };
 
         const xldx = new Xldx(sheetsData);
@@ -599,9 +774,9 @@ describe("index", () => {
           sheets: [
             {
               name: "Empty",
-              data: {}
-            }
-          ]
+              data: {},
+            },
+          ],
         };
 
         const xldx = new Xldx(sheetsData);
@@ -616,10 +791,10 @@ describe("index", () => {
               name: "Uneven",
               data: {
                 short: ["A"],
-                long: ["X", "Y", "Z"]
-              }
-            }
-          ]
+                long: ["X", "Y", "Z"],
+              },
+            },
+          ],
         };
 
         const xldx = new Xldx(sheetsData);

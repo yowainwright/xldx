@@ -1,0 +1,16 @@
+{
+  "name": "xldx",
+  "short_name": "xldx",
+  "description": "Zero-dependency XLSX generation for browser and Node.js",
+  "start_url": "/xldx/",
+  "display": "standalone",
+  "background_color": "#242938",
+  "theme_color": "#34d399",
+  "icons": [
+    {
+      "src": "/xldx/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

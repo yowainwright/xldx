@@ -1,5 +1,20 @@
 import { describe, it, expect } from "bun:test";
 import { MiniZip, MiniUnzip } from "../src/zip";
+import { supportsCompression, deflate, inflate } from "../src/zip/compress";
+import {
+  encodeString,
+  decodeBytes,
+  dosDateTime,
+  createFileData,
+  createFileDataCompressed,
+  calculateZipSize,
+  calculateZipSizeCompressed,
+  sliceBytes,
+  readUint16,
+  readUint32,
+  writeUint16,
+  writeUint32,
+} from "../src/zip/utils";
 
 describe("MiniZip", () => {
   describe("addFile", () => {
@@ -79,8 +94,12 @@ describe("MiniZip", () => {
       // Look for central directory signature: PK\x01\x02
       let foundCentralDir = false;
       for (let i = 0; i < data.length - 4; i++) {
-        if (data[i] === 0x50 && data[i + 1] === 0x4b &&
-            data[i + 2] === 0x01 && data[i + 3] === 0x02) {
+        if (
+          data[i] === 0x50 &&
+          data[i + 1] === 0x4b &&
+          data[i + 2] === 0x01 &&
+          data[i + 3] === 0x02
+        ) {
           foundCentralDir = true;
           break;
         }
@@ -108,7 +127,11 @@ describe("MiniZip", () => {
       zip.addFile("large.txt", largeContent);
 
       const data = zip.generate();
-      expect(data.length).toBeGreaterThan(100000);
+      expect(data.length).toBeGreaterThan(0);
+
+      const unzip = new MiniUnzip(data);
+      const content = unzip.getFile("large.txt");
+      expect(content).toBe(largeContent);
     });
 
     it("should generate empty ZIP when no files added", () => {
@@ -239,16 +262,16 @@ describe("MiniZip/MiniUnzip roundtrip", () => {
       { path: "text.txt", content: "Simple text" },
       { path: "numbers.txt", content: "123456789" },
       { path: "special.txt", content: "!@#$%^&*()" },
-      { path: "nested/path/file.xml", content: "<root><child/></root>" }
+      { path: "nested/path/file.xml", content: "<root><child/></root>" },
     ];
 
     const zip = new MiniZip();
-    testFiles.forEach(f => zip.addFile(f.path, f.content));
+    testFiles.forEach((f) => zip.addFile(f.path, f.content));
 
     const data = zip.generate();
     const unzip = new MiniUnzip(data);
 
-    testFiles.forEach(f => {
+    testFiles.forEach((f) => {
       expect(unzip.getFile(f.path)).toBe(f.content);
     });
   });
@@ -277,10 +300,16 @@ describe("MiniZip/MiniUnzip roundtrip", () => {
     zip.addFile("[Content_Types].xml", '<?xml version="1.0"?><Types/>');
     zip.addFile("_rels/.rels", '<?xml version="1.0"?><Relationships/>');
     zip.addFile("xl/workbook.xml", '<?xml version="1.0"?><workbook/>');
-    zip.addFile("xl/_rels/workbook.xml.rels", '<?xml version="1.0"?><Relationships/>');
+    zip.addFile(
+      "xl/_rels/workbook.xml.rels",
+      '<?xml version="1.0"?><Relationships/>',
+    );
     zip.addFile("xl/styles.xml", '<?xml version="1.0"?><styleSheet/>');
     zip.addFile("xl/sharedStrings.xml", '<?xml version="1.0"?><sst/>');
-    zip.addFile("xl/worksheets/sheet1.xml", '<?xml version="1.0"?><worksheet/>');
+    zip.addFile(
+      "xl/worksheets/sheet1.xml",
+      '<?xml version="1.0"?><worksheet/>',
+    );
 
     const data = zip.generate();
     const unzip = new MiniUnzip(data);
@@ -289,5 +318,265 @@ describe("MiniZip/MiniUnzip roundtrip", () => {
     expect(files).toContain("[Content_Types].xml");
     expect(files).toContain("xl/workbook.xml");
     expect(files).toContain("xl/worksheets/sheet1.xml");
+  });
+});
+
+describe("Compression utilities", () => {
+  describe("supportsCompression", () => {
+    it("should return boolean indicating compression support", () => {
+      const result = supportsCompression();
+      expect(typeof result).toBe("boolean");
+    });
+
+    it("should return true in Bun environment", () => {
+      expect(supportsCompression()).toBe(true);
+    });
+  });
+
+  describe("deflate", () => {
+    it("should compress data", async () => {
+      const data = new TextEncoder().encode("Hello, World!");
+      const compressed = await deflate(data);
+
+      expect(compressed).toBeInstanceOf(Uint8Array);
+      expect(compressed.length).toBeGreaterThan(0);
+    });
+
+    it("should compress repetitive data efficiently", async () => {
+      const repetitiveData = new TextEncoder().encode(
+        "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      );
+      const compressed = await deflate(repetitiveData);
+
+      expect(compressed.length).toBeLessThan(repetitiveData.length);
+    });
+  });
+
+  describe("inflate", () => {
+    it("should decompress deflated data", async () => {
+      const original = new TextEncoder().encode("Hello, World!");
+      const compressed = await deflate(original);
+      const decompressed = await inflate(compressed);
+
+      expect(new TextDecoder().decode(decompressed)).toBe("Hello, World!");
+    });
+
+    it("should handle roundtrip compression", async () => {
+      const testData = new TextEncoder().encode(
+        "Test data for roundtrip compression verification!",
+      );
+      const compressed = await deflate(testData);
+      const decompressed = await inflate(compressed);
+
+      expect(decompressed).toEqual(testData);
+    });
+  });
+});
+
+describe("Zip utility functions", () => {
+  describe("encodeString/decodeBytes", () => {
+    it("should encode string to Uint8Array", () => {
+      const result = encodeString("Hello");
+      expect(result).toBeInstanceOf(Uint8Array);
+      expect(result).toEqual(new Uint8Array([72, 101, 108, 108, 111]));
+    });
+
+    it("should decode Uint8Array to string", () => {
+      const bytes = new Uint8Array([72, 101, 108, 108, 111]);
+      expect(decodeBytes(bytes)).toBe("Hello");
+    });
+
+    it("should handle unicode roundtrip", () => {
+      const original = "日本語 한국어 中文";
+      const encoded = encodeString(original);
+      const decoded = decodeBytes(encoded);
+      expect(decoded).toBe(original);
+    });
+  });
+
+  describe("dosDateTime", () => {
+    it("should convert date to DOS format", () => {
+      const date = new Date("2024-06-15T14:30:45");
+      const result = dosDateTime(date);
+
+      expect(result.date).toBeGreaterThan(0);
+      expect(result.time).toBeGreaterThan(0);
+    });
+
+    it("should handle epoch edge case", () => {
+      const date = new Date("1980-01-01T00:00:00");
+      const result = dosDateTime(date);
+
+      expect(result.date).toBe((0 << 9) | (1 << 5) | 1);
+      expect(result.time).toBe(0);
+    });
+  });
+
+  describe("createFileData", () => {
+    it("should create file data without compression", () => {
+      const file = {
+        path: "test.txt",
+        data: new TextEncoder().encode("Hello"),
+      };
+      const result = createFileData(file, 0, false);
+
+      expect(result.fileName).toBeInstanceOf(Uint8Array);
+      expect(result.crc).toBeGreaterThan(0);
+      expect(result.data).toEqual(file.data);
+      expect(result.offset).toBe(0);
+      expect(result.compressionMethod).toBe(0);
+    });
+
+    it("should set compression method when compress is true", () => {
+      const file = {
+        path: "test.txt",
+        data: new TextEncoder().encode("Hello"),
+      };
+      const result = createFileData(file, 100, true);
+
+      expect(result.offset).toBe(100);
+      expect(result.compressionMethod).toBe(8);
+    });
+  });
+
+  describe("createFileDataCompressed", () => {
+    it("should create compressed file data", async () => {
+      const file = {
+        path: "test.txt",
+        data: new TextEncoder().encode("Hello, World!"),
+      };
+      const result = await createFileDataCompressed(file, 0);
+
+      expect(result.compressedData).toBeDefined();
+      expect(result.compressedData).toBeInstanceOf(Uint8Array);
+      expect(result.compressionMethod).toBe(8);
+    });
+
+    it("should include original data for CRC calculation", async () => {
+      const file = {
+        path: "test.txt",
+        data: new TextEncoder().encode("Test data"),
+      };
+      const result = await createFileDataCompressed(file, 50);
+
+      expect(result.data).toEqual(file.data);
+      expect(result.offset).toBe(50);
+    });
+  });
+
+  describe("calculateZipSize", () => {
+    it("should calculate size for single file", () => {
+      const files = [
+        { path: "test.txt", data: new TextEncoder().encode("Hello") },
+      ];
+      const result = calculateZipSize(files);
+
+      expect(result.totalSize).toBeGreaterThan(0);
+      expect(result.fileData).toHaveLength(1);
+    });
+
+    it("should calculate size for multiple files", () => {
+      const files = [
+        { path: "a.txt", data: new TextEncoder().encode("A") },
+        { path: "b.txt", data: new TextEncoder().encode("BB") },
+        { path: "c.txt", data: new TextEncoder().encode("CCC") },
+      ];
+      const result = calculateZipSize(files);
+
+      expect(result.fileData).toHaveLength(3);
+      expect(result.fileData[0].offset).toBe(0);
+      expect(result.fileData[1].offset).toBeGreaterThan(0);
+      expect(result.fileData[2].offset).toBeGreaterThan(
+        result.fileData[1].offset,
+      );
+    });
+  });
+
+  describe("calculateZipSizeCompressed", () => {
+    it("should calculate size with compression", async () => {
+      const files = [
+        { path: "test.txt", data: new TextEncoder().encode("Hello World") },
+      ];
+      const result = await calculateZipSizeCompressed(files);
+
+      expect(result.totalSize).toBeGreaterThan(0);
+      expect(result.fileData).toHaveLength(1);
+      expect(result.fileData[0].compressedData).toBeDefined();
+    });
+
+    it("should handle multiple files", async () => {
+      const files = [
+        { path: "a.txt", data: new TextEncoder().encode("AAAAAAAAAA") },
+        { path: "b.txt", data: new TextEncoder().encode("BBBBBBBBBB") },
+      ];
+      const result = await calculateZipSizeCompressed(files);
+
+      expect(result.fileData).toHaveLength(2);
+      expect(result.fileData[0].offset).toBe(0);
+      expect(result.fileData[1].offset).toBeGreaterThan(0);
+    });
+  });
+
+  describe("sliceBytes", () => {
+    it("should slice Uint8Array", () => {
+      const data = new Uint8Array([1, 2, 3, 4, 5]);
+      const result = sliceBytes(data, 1, 4);
+
+      expect(result).toEqual(new Uint8Array([2, 3, 4]));
+    });
+  });
+
+  describe("DataView helpers", () => {
+    it("should read/write Uint16 in little endian", () => {
+      const buffer = new ArrayBuffer(4);
+      const view = new DataView(buffer);
+
+      writeUint16(view, 0, 0x1234);
+      expect(readUint16(view, 0)).toBe(0x1234);
+    });
+
+    it("should read/write Uint32 in little endian", () => {
+      const buffer = new ArrayBuffer(8);
+      const view = new DataView(buffer);
+
+      writeUint32(view, 0, 0x12345678);
+      expect(readUint32(view, 0)).toBe(0x12345678);
+    });
+  });
+});
+
+describe("MiniZip compressed", () => {
+  describe("generateCompressed", () => {
+    it("should generate compressed ZIP", async () => {
+      const zip = new MiniZip();
+      zip.addFile("test.txt", "Hello, World!");
+
+      const data = await zip.generateCompressed();
+      expect(data).toBeInstanceOf(Uint8Array);
+      expect(data.length).toBeGreaterThan(0);
+    });
+
+    it("should produce smaller output for repetitive content", async () => {
+      const zip = new MiniZip();
+      const repetitive = "abcdefgh".repeat(1000);
+      zip.addFile("large.txt", repetitive);
+
+      const uncompressed = zip.generate();
+      const compressed = await zip.generateCompressed();
+
+      expect(compressed.length).toBeLessThan(uncompressed.length);
+    });
+
+    it("should be readable after compression with async method", async () => {
+      const zip = new MiniZip();
+      const content = "Test content for compression";
+      zip.addFile("test.txt", content);
+
+      const data = await zip.generateCompressed();
+      const unzip = new MiniUnzip(data);
+
+      const result = await unzip.getFileAsync("test.txt");
+      expect(result).toBe(content);
+    });
   });
 });

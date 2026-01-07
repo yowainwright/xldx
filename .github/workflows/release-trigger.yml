@@ -3,7 +3,7 @@ name: xldx trigger release tests 🚀
 on:
   push:
     tags:
-      - '**'
+      - "**"
 
 permissions:
   contents: read
