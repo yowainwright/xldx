@@ -1,8 +1,12 @@
 import type { XldxPlugin } from "xldx";
-import type { ImageType, ImageOptions, InternalImage, CellPosition } from "./types";
+import pkg from "../package.json";
+import type {
+  ImageType,
+  ImageOptions,
+  InternalImage,
+  CellPosition,
+} from "./types";
 import {
-  PLUGIN_NAME,
-  PLUGIN_VERSION,
   EMU_PER_PIXEL,
   XML_DECLARATION,
   DRAWING_NAMESPACE,
@@ -17,14 +21,21 @@ import {
   GIF_SIGNATURE,
 } from "./constants";
 
-export type { ImageType, ImageOptions, InternalImage, CellPosition } from "./types";
+export type {
+  ImageType,
+  ImageOptions,
+  InternalImage,
+  CellPosition,
+} from "./types";
 
 function cellToRowCol(cell: string): CellPosition {
   const match = cell.match(/^([A-Z]+)(\d+)$/);
   if (!match) throw new Error(`Invalid cell reference: ${cell}`);
   const colStr = match[1];
   const row = parseInt(match[2], 10);
-  const col = colStr.split("").reduce((acc, char) => acc * 26 + (char.charCodeAt(0) - 64), 0);
+  const col = colStr
+    .split("")
+    .reduce((acc, char) => acc * 26 + (char.charCodeAt(0) - 64), 0);
   return { row, col };
 }
 
@@ -42,7 +53,9 @@ function emuFromPixels(pixels: number): number {
   return Math.round(pixels * EMU_PER_PIXEL);
 }
 
-function groupBySheet<T extends { sheetIndex: number }>(items: T[]): Map<number, T[]> {
+function groupBySheet<T extends { sheetIndex: number }>(
+  items: T[],
+): Map<number, T[]> {
   return items.reduce((acc, item) => {
     const existing = acc.get(item.sheetIndex) || [];
     acc.set(item.sheetIndex, [...existing, item]);
@@ -109,8 +122,8 @@ export function imagesPlugin(): XldxPlugin & {
   let imageCounter = 1;
 
   return {
-    name: PLUGIN_NAME,
-    version: PLUGIN_VERSION,
+    name: pkg.name,
+    version: pkg.version,
 
     addImage(options: ImageOptions): void {
       const type = options.type || detectImageType(options.image);
@@ -144,53 +157,62 @@ export function imagesPlugin(): XldxPlugin & {
 
       const imagesBySheet = groupBySheet(images);
 
-      Array.from(imagesBySheet.entries()).forEach(([sheetIndex, sheetImages]) => {
-        const drawingXml = generateDrawingXml(sheetImages);
-        const drawingRelsXml = generateDrawingRelsXml(sheetImages);
+      Array.from(imagesBySheet.entries()).forEach(
+        ([sheetIndex, sheetImages]) => {
+          const drawingXml = generateDrawingXml(sheetImages);
+          const drawingRelsXml = generateDrawingRelsXml(sheetImages);
 
-        files.set(`xl/drawings/drawing${sheetIndex + 1}.xml`, drawingXml);
-        files.set(`xl/drawings/_rels/drawing${sheetIndex + 1}.xml.rels`, drawingRelsXml);
+          files.set(`xl/drawings/drawing${sheetIndex + 1}.xml`, drawingXml);
+          files.set(
+            `xl/drawings/_rels/drawing${sheetIndex + 1}.xml.rels`,
+            drawingRelsXml,
+          );
 
-        sheetImages.forEach((img) => {
-          const ext = img.type === "jpeg" ? "jpeg" : img.type;
-          files.set(`xl/media/image${img.imageId}.${ext}`, img.image);
-        });
+          sheetImages.forEach((img) => {
+            const ext = img.type === "jpeg" ? "jpeg" : img.type;
+            files.set(`xl/media/image${img.imageId}.${ext}`, img.image);
+          });
 
-        const worksheetPath = `xl/worksheets/sheet${sheetIndex + 1}.xml`;
-        const worksheet = files.get(worksheetPath);
-        if (typeof worksheet === "string") {
-          const insertPoint = worksheet.indexOf("</worksheet>");
-          if (insertPoint !== -1) {
-            const drawingRef = `<drawing r:id="rId${sheetIndex + 2}"/>`;
-            files.set(
-              worksheetPath,
-              worksheet.slice(0, insertPoint) + drawingRef + worksheet.slice(insertPoint),
-            );
+          const worksheetPath = `xl/worksheets/sheet${sheetIndex + 1}.xml`;
+          const worksheet = files.get(worksheetPath);
+          if (typeof worksheet === "string") {
+            const insertPoint = worksheet.indexOf("</worksheet>");
+            if (insertPoint !== -1) {
+              const drawingRef = `<drawing r:id="rId${sheetIndex + 2}"/>`;
+              files.set(
+                worksheetPath,
+                worksheet.slice(0, insertPoint) +
+                  drawingRef +
+                  worksheet.slice(insertPoint),
+              );
+            }
           }
-        }
 
-        const sheetRelsPath = `xl/worksheets/_rels/sheet${sheetIndex + 1}.xml.rels`;
-        const existingRels = files.get(sheetRelsPath);
-        const drawingRel = `<Relationship Id="rId${sheetIndex + 2}" Type="${DRAWING_RELATIONSHIP_TYPE}" Target="../drawings/drawing${sheetIndex + 1}.xml"/>`;
+          const sheetRelsPath = `xl/worksheets/_rels/sheet${sheetIndex + 1}.xml.rels`;
+          const existingRels = files.get(sheetRelsPath);
+          const drawingRel = `<Relationship Id="rId${sheetIndex + 2}" Type="${DRAWING_RELATIONSHIP_TYPE}" Target="../drawings/drawing${sheetIndex + 1}.xml"/>`;
 
-        if (typeof existingRels === "string") {
-          const insertPoint = existingRels.indexOf("</Relationships>");
-          if (insertPoint !== -1) {
+          if (typeof existingRels === "string") {
+            const insertPoint = existingRels.indexOf("</Relationships>");
+            if (insertPoint !== -1) {
+              files.set(
+                sheetRelsPath,
+                existingRels.slice(0, insertPoint) +
+                  drawingRel +
+                  existingRels.slice(insertPoint),
+              );
+            }
+          } else {
             files.set(
               sheetRelsPath,
-              existingRels.slice(0, insertPoint) + drawingRel + existingRels.slice(insertPoint),
-            );
-          }
-        } else {
-          files.set(
-            sheetRelsPath,
-            `${XML_DECLARATION}
+              `${XML_DECLARATION}
 <Relationships xmlns="${RELATIONSHIPS_NAMESPACE}">
 ${drawingRel}
 </Relationships>`,
-          );
-        }
-      });
+            );
+          }
+        },
+      );
     },
 
     getContentTypes(): readonly string[] {
@@ -212,7 +234,11 @@ ${drawingRel}
       return [...typeOverrides, ...drawingOverrides];
     },
 
-    getRelationships(): readonly { id: string; type: string; target: string }[] {
+    getRelationships(): readonly {
+      id: string;
+      type: string;
+      target: string;
+    }[] {
       return [];
     },
   };

@@ -1,15 +1,17 @@
-export const PLUGIN_NAME = "@xldx/images";
-export const PLUGIN_VERSION = "0.0.1";
-
 export const EMU_PER_PIXEL = 9525;
 
-export const XML_DECLARATION = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+export const XML_DECLARATION =
+  '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
 
-export const DRAWING_NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing";
-export const DRAWING_MAIN_NAMESPACE = "http://schemas.openxmlformats.org/drawingml/2006/main";
-export const RELATIONSHIPS_NAMESPACE = "http://schemas.openxmlformats.org/package/2006/relationships";
+export const DRAWING_NAMESPACE =
+  "http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing";
+export const DRAWING_MAIN_NAMESPACE =
+  "http://schemas.openxmlformats.org/drawingml/2006/main";
+export const RELATIONSHIPS_NAMESPACE =
+  "http://schemas.openxmlformats.org/package/2006/relationships";
 
-export const CONTENT_TYPE_DRAWING = "application/vnd.openxmlformats-officedocument.drawing+xml";
+export const CONTENT_TYPE_DRAWING =
+  "application/vnd.openxmlformats-officedocument.drawing+xml";
 
 export const CONTENT_TYPES: Record<string, string> = {
   png: "image/png",

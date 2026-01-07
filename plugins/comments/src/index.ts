@@ -1,8 +1,12 @@
 import type { XldxPlugin } from "xldx";
-import type { Comment, CommentData, CommentsPluginState, CellPosition } from "./types";
+import pkg from "../package.json";
+import type {
+  Comment,
+  CommentData,
+  CommentsPluginState,
+  CellPosition,
+} from "./types";
 import {
-  PLUGIN_NAME,
-  PLUGIN_VERSION,
   VML_SHAPE_BASE_ID,
   VML_SHAPE_WIDTH,
   VML_SHAPE_HEIGHT,
@@ -14,14 +18,21 @@ import {
   CONTENT_TYPE_COMMENTS,
 } from "./constants";
 
-export type { Comment, CommentData, CommentsPluginState, CellPosition } from "./types";
+export type {
+  Comment,
+  CommentData,
+  CommentsPluginState,
+  CellPosition,
+} from "./types";
 
 function cellToRowCol(cell: string): CellPosition {
   const match = cell.match(/^([A-Z]+)(\d+)$/);
   if (!match) throw new Error(`Invalid cell reference: ${cell}`);
   const colStr = match[1];
   const row = parseInt(match[2], 10);
-  const col = colStr.split("").reduce((acc, char) => acc * 26 + (char.charCodeAt(0) - 64), 0);
+  const col = colStr
+    .split("")
+    .reduce((acc, char) => acc * 26 + (char.charCodeAt(0) - 64), 0);
   return { row, col };
 }
 
@@ -34,7 +45,9 @@ function escapeXml(str: string): string {
     .replace(/'/g, "&apos;");
 }
 
-export function groupBySheet<T extends { sheetIndex: number }>(items: T[]): Map<number, T[]> {
+export function groupBySheet<T extends { sheetIndex: number }>(
+  items: T[],
+): Map<number, T[]> {
   return items.reduce((acc, item) => {
     const existing = acc.get(item.sheetIndex) || [];
     acc.set(item.sheetIndex, [...existing, item]);
@@ -42,8 +55,13 @@ export function groupBySheet<T extends { sheetIndex: number }>(items: T[]): Map<
   }, new Map<number, T[]>());
 }
 
-function generateCommentsXml(comments: CommentData[], authors: string[]): string {
-  const authorXml = authors.map((a) => `<author>${escapeXml(a)}</author>`).join("");
+function generateCommentsXml(
+  comments: CommentData[],
+  authors: string[],
+): string {
+  const authorXml = authors
+    .map((a) => `<author>${escapeXml(a)}</author>`)
+    .join("");
   const commentXml = comments
     .map((c) => {
       const authorId = authors.indexOf(c.author);
@@ -99,8 +117,8 @@ export function commentsPlugin(): XldxPlugin & {
   };
 
   return {
-    name: PLUGIN_NAME,
-    version: PLUGIN_VERSION,
+    name: pkg.name,
+    version: pkg.version,
 
     addComment(comment: Comment): void {
       const sheetIndex = 0;
@@ -128,13 +146,15 @@ export function commentsPlugin(): XldxPlugin & {
 
       const commentsBySheet = groupBySheet(state.comments);
 
-      Array.from(commentsBySheet.entries()).forEach(([sheetIndex, sheetComments]) => {
-        const commentsXml = generateCommentsXml(sheetComments, state.authors);
-        const vmlXml = generateVmlDrawing(sheetComments);
+      Array.from(commentsBySheet.entries()).forEach(
+        ([sheetIndex, sheetComments]) => {
+          const commentsXml = generateCommentsXml(sheetComments, state.authors);
+          const vmlXml = generateVmlDrawing(sheetComments);
 
-        files.set(`xl/comments${sheetIndex + 1}.xml`, commentsXml);
-        files.set(`xl/drawings/vmlDrawing${sheetIndex + 1}.vml`, vmlXml);
-      });
+          files.set(`xl/comments${sheetIndex + 1}.xml`, commentsXml);
+          files.set(`xl/drawings/vmlDrawing${sheetIndex + 1}.vml`, vmlXml);
+        },
+      );
     },
 
     getContentTypes(): readonly string[] {
@@ -147,7 +167,11 @@ export function commentsPlugin(): XldxPlugin & {
       );
     },
 
-    getRelationships(): readonly { id: string; type: string; target: string }[] {
+    getRelationships(): readonly {
+      id: string;
+      type: string;
+      target: string;
+    }[] {
       return [];
     },
   };

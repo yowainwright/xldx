@@ -49,26 +49,31 @@ export const FEATURES: Feature[] = [
   },
   {
     name: "Read existing files",
-    support: { xldx: "partial", SheetJS: "yes", ExcelJS: "yes" },
+    support: { xldx: "yes", SheetJS: "yes", ExcelJS: "yes" },
   },
   {
     name: "Charts",
-    support: { xldx: "no", SheetJS: "partial", ExcelJS: "yes" },
+    support: { xldx: "yes", SheetJS: "partial", ExcelJS: "yes" },
+    note: "via @xldx/chart-hooks",
   },
   {
     name: "Images",
-    support: { xldx: "no", SheetJS: "yes", ExcelJS: "yes" },
+    support: { xldx: "yes", SheetJS: "yes", ExcelJS: "yes" },
+    note: "via @xldx/images",
   },
   {
     name: "Conditional formatting",
-    support: { xldx: "no", SheetJS: "yes", ExcelJS: "yes" },
+    support: { xldx: "yes", SheetJS: "yes", ExcelJS: "yes" },
+    note: "via @xldx/conditional-formatting",
   },
   {
     name: "Data validation",
-    support: { xldx: "no", SheetJS: "yes", ExcelJS: "yes" },
+    support: { xldx: "yes", SheetJS: "yes", ExcelJS: "yes" },
+    note: "via @xldx/validation",
   },
   {
     name: "Comments",
-    support: { xldx: "no", SheetJS: "yes", ExcelJS: "yes" },
+    support: { xldx: "yes", SheetJS: "yes", ExcelJS: "yes" },
+    note: "via @xldx/comments",
   },
 ];

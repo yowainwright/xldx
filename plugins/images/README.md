@@ -11,20 +11,20 @@ bun add @xldx/images
 ## Usage
 
 ```typescript
-import { Xldx } from 'xldx';
-import { imagesPlugin, addImage } from '@xldx/images';
+import { Xldx } from "xldx";
+import { imagesPlugin, addImage } from "@xldx/images";
 
 const plugin = imagesPlugin();
 
 const xldx = new Xldx(data)
   .use(plugin)
-  .createSheet({ name: 'Report' }, ...columns);
+  .createSheet({ name: "Report" }, ...columns);
 
 addImage(plugin, {
-  cell: 'A1',
-  image: imageBuffer,  // Uint8Array
+  cell: "A1",
+  image: imageBuffer, // Uint8Array
   width: 200,
-  height: 100
+  height: 100,
 });
 
 const xlsx = await xldx.toUint8Array();
@@ -42,14 +42,14 @@ Adds an image to the plugin.
 
 ```typescript
 interface ImageOptions {
-  cell: string;           // Cell reference (e.g., "A1")
-  image: Uint8Array;      // Image data as bytes
-  width: number;          // Display width in pixels
-  height: number;         // Display height in pixels
-  type?: ImageType;       // Optional: 'png' | 'jpeg' | 'gif'
-  offsetX?: number;       // Optional: horizontal offset in pixels
-  offsetY?: number;       // Optional: vertical offset in pixels
-  sheet?: string;         // Optional: sheet name
+  cell: string; // Cell reference (e.g., "A1")
+  image: Uint8Array; // Image data as bytes
+  width: number; // Display width in pixels
+  height: number; // Display height in pixels
+  type?: ImageType; // Optional: 'png' | 'jpeg' | 'gif'
+  offsetX?: number; // Optional: horizontal offset in pixels
+  offsetY?: number; // Optional: vertical offset in pixels
+  sheet?: string; // Optional: sheet name
 }
 ```
 
@@ -64,31 +64,31 @@ interface ImageOptions {
 ### From File (Bun/Node)
 
 ```typescript
-const imageBuffer = await Bun.file('./logo.png').arrayBuffer();
+const imageBuffer = await Bun.file("./logo.png").arrayBuffer();
 const imageData = new Uint8Array(imageBuffer);
 
 addImage(plugin, {
-  cell: 'A1',
+  cell: "A1",
   image: imageData,
   width: 200,
-  height: 100
+  height: 100,
 });
 ```
 
 ### From URL (Browser)
 
 ```typescript
-const response = await fetch('/images/logo.png');
+const response = await fetch("/images/logo.png");
 const imageData = new Uint8Array(await response.arrayBuffer());
 
 addImage(plugin, {
-  cell: 'A1',
+  cell: "A1",
   image: imageData,
   width: 200,
-  height: 100
+  height: 100,
 });
 ```
 
 ## License
 
-Elastic-2.0
+[O'Sassy](https://osaasy.dev)

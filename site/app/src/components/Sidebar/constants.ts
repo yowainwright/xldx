@@ -33,7 +33,10 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
       { label: "Overview", href: "/docs/plugins" },
       { label: "Images", href: "/docs/plugins/images" },
       { label: "Comments", href: "/docs/plugins/comments" },
-      { label: "Conditional Formatting", href: "/docs/plugins/conditional-formatting" },
+      {
+        label: "Conditional Formatting",
+        href: "/docs/plugins/conditional-formatting",
+      },
       { label: "Validation", href: "/docs/plugins/validation" },
     ],
   },

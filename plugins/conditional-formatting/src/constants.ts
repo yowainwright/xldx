@@ -1,6 +1,3 @@
-export const PLUGIN_NAME = "@xldx/conditional-formatting";
-export const PLUGIN_VERSION = "0.0.1";
-
 export const ICON_COUNTS: Record<string, number> = {
   "3Arrows": 3,
   "3ArrowsGray": 3,

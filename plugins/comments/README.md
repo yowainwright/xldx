@@ -11,25 +11,25 @@ bun add @xldx/comments
 ## Usage
 
 ```typescript
-import { Xldx } from 'xldx';
-import { commentsPlugin, addComment } from '@xldx/comments';
+import { Xldx } from "xldx";
+import { commentsPlugin, addComment } from "@xldx/comments";
 
 const plugin = commentsPlugin();
 
 const xldx = new Xldx(data)
   .use(plugin)
-  .createSheet({ name: 'Report' }, ...columns);
+  .createSheet({ name: "Report" }, ...columns);
 
 addComment(plugin, {
-  cell: 'A1',
-  author: 'System',
-  text: 'This value was auto-calculated'
+  cell: "A1",
+  author: "System",
+  text: "This value was auto-calculated",
 });
 
 addComment(plugin, {
-  cell: 'B2',
-  author: 'Reviewer',
-  text: 'Please verify this data'
+  cell: "B2",
+  author: "Reviewer",
+  text: "Please verify this data",
 });
 
 const xlsx = await xldx.toUint8Array();
@@ -47,10 +47,10 @@ Adds a comment to the plugin.
 
 ```typescript
 interface Comment {
-  cell: string;      // Cell reference (e.g., "A1", "B2")
-  author: string;    // Comment author name
-  text: string;      // Comment text content
-  sheet?: string;    // Optional sheet name
+  cell: string; // Cell reference (e.g., "A1", "B2")
+  author: string; // Comment author name
+  text: string; // Comment text content
+  sheet?: string; // Optional sheet name
 }
 ```
 
@@ -61,4 +61,4 @@ interface Comment {
 
 ## License
 
-Elastic-2.0
+[O'Sassy](https://osaasy.dev)

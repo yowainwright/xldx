@@ -1,11 +1,12 @@
 import { describe, it, expect } from "bun:test";
 import { conditionalFormattingPlugin, addRule } from "../src/index";
+import pkg from "../package.json";
 
 describe("conditionalFormattingPlugin", () => {
   it("should create a plugin with correct name and version", () => {
     const plugin = conditionalFormattingPlugin();
-    expect(plugin.name).toBe("@xldx/conditional-formatting");
-    expect(plugin.version).toBe("0.0.1");
+    expect(plugin.name).toBe(pkg.name);
+    expect(plugin.version).toBe(pkg.version);
   });
 
   it("should add and retrieve color scale rules", () => {
@@ -98,7 +99,12 @@ describe("conditionalFormattingPlugin", () => {
       range: "A1:A10",
       operator: "equal",
       value: 0,
-      style: { bgColor: "#FF0000", fontColor: "#FFFFFF", bold: true, italic: true },
+      style: {
+        bgColor: "#FF0000",
+        fontColor: "#FFFFFF",
+        bold: true,
+        italic: true,
+      },
     });
 
     const dxfsXml = plugin.generateDxfsXml();
@@ -134,7 +140,10 @@ describe("conditionalFormattingPlugin", () => {
       "xl/worksheets/sheet1.xml",
       '<?xml version="1.0"?><worksheet><sheetData></sheetData></worksheet>',
     );
-    files.set("xl/styles.xml", '<?xml version="1.0"?><styleSheet></styleSheet>');
+    files.set(
+      "xl/styles.xml",
+      '<?xml version="1.0"?><styleSheet></styleSheet>',
+    );
 
     plugin.afterGenerate?.(files);
 
@@ -146,7 +155,8 @@ describe("conditionalFormattingPlugin", () => {
   it("should not modify files when no rules", () => {
     const plugin = conditionalFormattingPlugin();
     const files = new Map<string, string | Uint8Array>();
-    const originalContent = '<?xml version="1.0"?><worksheet><sheetData></sheetData></worksheet>';
+    const originalContent =
+      '<?xml version="1.0"?><worksheet><sheetData></sheetData></worksheet>';
     files.set("xl/worksheets/sheet1.xml", originalContent);
 
     plugin.afterGenerate?.(files);

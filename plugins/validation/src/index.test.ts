@@ -1,14 +1,15 @@
 import { describe, it, expect } from "bun:test";
 import { validationPlugin, addValidation } from "./index";
 import type { ListValidation, NumericValidation } from "./types";
+import pkg from "../package.json";
 
 describe("@xldx/validation", () => {
   describe("validationPlugin", () => {
     it("should create a plugin with correct name and version", () => {
       const plugin = validationPlugin();
 
-      expect(plugin.name).toBe("@xldx/validation");
-      expect(plugin.version).toBe("0.0.1");
+      expect(plugin.name).toBe(pkg.name);
+      expect(plugin.version).toBe(pkg.version);
     });
 
     it("should have empty validations map initially", () => {

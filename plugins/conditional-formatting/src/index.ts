@@ -9,7 +9,8 @@ import type {
   InternalRule,
   RuleStyle,
 } from "./types";
-import { PLUGIN_NAME, PLUGIN_VERSION, ICON_COUNTS, OPERATOR_MAP } from "./constants";
+import pkg from "../package.json";
+import { ICON_COUNTS, OPERATOR_MAP } from "./constants";
 
 export type {
   ConditionalFormatType,
@@ -77,7 +78,11 @@ function generateIconSetXml(rule: IconSetRule, priority: number): string {
 </conditionalFormatting>`;
 }
 
-function generateCellIsXml(rule: CellIsRule, priority: number, dxfId: number): string {
+function generateCellIsXml(
+  rule: CellIsRule,
+  priority: number,
+  dxfId: number,
+): string {
   const formulas =
     rule.operator === "between" || rule.operator === "notBetween"
       ? `<formula>${rule.value}</formula><formula>${rule.value2}</formula>`
@@ -90,7 +95,11 @@ ${formulas}
 </conditionalFormatting>`;
 }
 
-function generateExpressionXml(rule: ExpressionRule, priority: number, dxfId: number): string {
+function generateExpressionXml(
+  rule: ExpressionRule,
+  priority: number,
+  dxfId: number,
+): string {
   return `<conditionalFormatting sqref="${rule.range}">
 <cfRule type="expression" dxfId="${dxfId}" priority="${priority}">
 <formula>${rule.formula}</formula>
@@ -105,7 +114,8 @@ function generateDxfXml(style: RuleStyle): string {
     const fontParts: string[] = [];
     if (style.bold) fontParts.push("<b/>");
     if (style.italic) fontParts.push("<i/>");
-    if (style.fontColor) fontParts.push(`<color rgb="${hexToArgb(style.fontColor)}"/>`);
+    if (style.fontColor)
+      fontParts.push(`<color rgb="${hexToArgb(style.fontColor)}"/>`);
     parts.push(`<font>${fontParts.join("")}</font>`);
   }
 
@@ -128,8 +138,8 @@ export function conditionalFormattingPlugin(): XldxPlugin & {
   let priorityCounter = 1;
 
   return {
-    name: PLUGIN_NAME,
-    version: PLUGIN_VERSION,
+    name: pkg.name,
+    version: pkg.version,
 
     addRule(rule: ConditionalFormatRule): void {
       rules.push({
@@ -189,7 +199,9 @@ export function conditionalFormattingPlugin(): XldxPlugin & {
       if (insertPoint === -1) return;
 
       const updatedWorksheet =
-        worksheet.slice(0, insertPoint + 12) + cfXml + worksheet.slice(insertPoint + 12);
+        worksheet.slice(0, insertPoint + 12) +
+        cfXml +
+        worksheet.slice(insertPoint + 12);
       files.set(worksheetPath, updatedWorksheet);
 
       const dxfsXml = this.generateDxfsXml();
@@ -200,7 +212,9 @@ export function conditionalFormattingPlugin(): XldxPlugin & {
           const styleSheetEnd = styles.indexOf("</styleSheet>");
           if (styleSheetEnd !== -1) {
             const updatedStyles =
-              styles.slice(0, styleSheetEnd) + dxfsXml + styles.slice(styleSheetEnd);
+              styles.slice(0, styleSheetEnd) +
+              dxfsXml +
+              styles.slice(styleSheetEnd);
             files.set(stylesPath, updatedStyles);
           }
         }
@@ -211,7 +225,11 @@ export function conditionalFormattingPlugin(): XldxPlugin & {
       return [];
     },
 
-    getRelationships(): readonly { id: string; type: string; target: string }[] {
+    getRelationships(): readonly {
+      id: string;
+      type: string;
+      target: string;
+    }[] {
       return [];
     },
   };

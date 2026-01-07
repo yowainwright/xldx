@@ -1,22 +1,39 @@
 import { describe, it, expect } from "bun:test";
 import { commentsPlugin, addComment, groupBySheet } from "../src/index";
+import pkg from "../package.json";
 
 describe("commentsPlugin", () => {
   it("should create a plugin with correct name and version", () => {
     const plugin = commentsPlugin();
-    expect(plugin.name).toBe("@xldx/comments");
-    expect(plugin.version).toBe("0.0.1");
+    expect(plugin.name).toBe(pkg.name);
+    expect(plugin.version).toBe(pkg.version);
   });
 
   it("should add and retrieve comments", () => {
     const plugin = commentsPlugin();
-    plugin.addComment({ cell: "A1", author: "Test Author", text: "Test comment" });
-    plugin.addComment({ cell: "B2", author: "Another Author", text: "Another comment" });
+    plugin.addComment({
+      cell: "A1",
+      author: "Test Author",
+      text: "Test comment",
+    });
+    plugin.addComment({
+      cell: "B2",
+      author: "Another Author",
+      text: "Another comment",
+    });
 
     const comments = plugin.getComments();
     expect(comments).toHaveLength(2);
-    expect(comments[0]).toEqual({ cell: "A1", author: "Test Author", text: "Test comment" });
-    expect(comments[1]).toEqual({ cell: "B2", author: "Another Author", text: "Another comment" });
+    expect(comments[0]).toEqual({
+      cell: "A1",
+      author: "Test Author",
+      text: "Test comment",
+    });
+    expect(comments[1]).toEqual({
+      cell: "B2",
+      author: "Another Author",
+      text: "Another comment",
+    });
   });
 
   it("should return empty array when no comments", () => {

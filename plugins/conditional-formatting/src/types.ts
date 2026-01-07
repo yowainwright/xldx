@@ -8,7 +8,9 @@ export type ConditionalFormatType =
 export interface ColorScaleRule {
   readonly type: "colorScale";
   readonly range: string;
-  readonly colors: readonly [string, string] | readonly [string, string, string];
+  readonly colors:
+    | readonly [string, string]
+    | readonly [string, string, string];
   readonly sheet?: string;
 }
 

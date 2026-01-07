@@ -1,11 +1,12 @@
 import { describe, it, expect } from "bun:test";
 import { imagesPlugin, addImage } from "../src/index";
+import pkg from "../package.json";
 
 describe("imagesPlugin", () => {
   it("should create a plugin with correct name and version", () => {
     const plugin = imagesPlugin();
-    expect(plugin.name).toBe("@xldx/images");
-    expect(plugin.version).toBe("0.0.1");
+    expect(plugin.name).toBe(pkg.name);
+    expect(plugin.version).toBe(pkg.version);
   });
 
   it("should add and retrieve images", () => {
@@ -58,7 +59,13 @@ describe("imagesPlugin", () => {
     const plugin = imagesPlugin();
     const data = new Uint8Array([0x00, 0x00, 0x00, 0x00]);
 
-    plugin.addImage({ cell: "A1", image: data, width: 100, height: 100, type: "jpeg" });
+    plugin.addImage({
+      cell: "A1",
+      image: data,
+      width: 100,
+      height: 100,
+      type: "jpeg",
+    });
 
     expect(plugin.getImages()[0].type).toBe("jpeg");
   });
@@ -88,7 +95,10 @@ describe("imagesPlugin", () => {
     plugin.addImage({ cell: "B2", image: pngData, width: 200, height: 150 });
 
     const files = new Map<string, string | Uint8Array>();
-    files.set("xl/worksheets/sheet1.xml", '<?xml version="1.0"?><worksheet></worksheet>');
+    files.set(
+      "xl/worksheets/sheet1.xml",
+      '<?xml version="1.0"?><worksheet></worksheet>',
+    );
 
     plugin.afterGenerate?.(files);
 

@@ -1,4 +1,5 @@
 import type { XldxPlugin, WorkbookContext } from "xldx";
+import pkg from "../package.json";
 import type {
   ValidationRule,
   ListValidation,
@@ -108,8 +109,8 @@ export function validationPlugin(): XldxPlugin & ValidationPluginState {
   };
 
   return {
-    name: "@xldx/validation",
-    version: "0.0.1",
+    name: pkg.name,
+    version: pkg.version,
     validations: state.validations,
 
     beforeGenerate(context: WorkbookContext): void {

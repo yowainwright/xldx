@@ -104,7 +104,9 @@ export interface PatternContext {
   columnKey: string;
 }
 
-export type PatternFunction = (context: PatternContext) => Partial<CellStyle> | null;
+export type PatternFunction = (
+  context: PatternContext,
+) => Partial<CellStyle> | null;
 
 export interface ColumnPattern {
   bgColorPattern?: string | PatternFunction;

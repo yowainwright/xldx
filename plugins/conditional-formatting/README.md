@@ -11,27 +11,30 @@ bun add @xldx/conditional-formatting
 ## Usage
 
 ```typescript
-import { Xldx } from 'xldx';
-import { conditionalFormattingPlugin, addRule } from '@xldx/conditional-formatting';
+import { Xldx } from "xldx";
+import {
+  conditionalFormattingPlugin,
+  addRule,
+} from "@xldx/conditional-formatting";
 
 const plugin = conditionalFormattingPlugin();
 
 const xldx = new Xldx(data)
   .use(plugin)
-  .createSheet({ name: 'Sales' }, ...columns);
+  .createSheet({ name: "Sales" }, ...columns);
 
 // Color scale (red → yellow → green)
 addRule(plugin, {
-  type: 'colorScale',
-  range: 'B2:B100',
-  colors: ['#FF0000', '#FFFF00', '#00FF00']
+  type: "colorScale",
+  range: "B2:B100",
+  colors: ["#FF0000", "#FFFF00", "#00FF00"],
 });
 
 // Data bars
 addRule(plugin, {
-  type: 'dataBar',
-  range: 'C2:C100',
-  color: '#638EC6'
+  type: "dataBar",
+  range: "C2:C100",
+  color: "#638EC6",
 });
 
 const xlsx = await xldx.toUint8Array();
@@ -55,10 +58,10 @@ addRule(plugin, {
 
 ```typescript
 addRule(plugin, {
-  type: 'dataBar',
-  range: 'B1:B10',
-  color: '#638EC6',
-  showValue: true  // optional, default true
+  type: "dataBar",
+  range: "B1:B10",
+  color: "#638EC6",
+  showValue: true, // optional, default true
 });
 ```
 
@@ -66,9 +69,9 @@ addRule(plugin, {
 
 ```typescript
 addRule(plugin, {
-  type: 'iconSet',
-  range: 'C1:C10',
-  iconSet: '3Arrows'
+  type: "iconSet",
+  range: "C1:C10",
+  iconSet: "3Arrows",
 });
 ```
 
@@ -78,16 +81,16 @@ Available: `3Arrows`, `3ArrowsGray`, `3Flags`, `3TrafficLights1`, `3TrafficLight
 
 ```typescript
 addRule(plugin, {
-  type: 'cellIs',
-  range: 'D1:D10',
-  operator: 'greaterThan',
+  type: "cellIs",
+  range: "D1:D10",
+  operator: "greaterThan",
   value: 100,
   style: {
-    bgColor: '#FF0000',
-    fontColor: '#FFFFFF',
+    bgColor: "#FF0000",
+    fontColor: "#FFFFFF",
     bold: true,
-    italic: false
-  }
+    italic: false,
+  },
 });
 ```
 
@@ -97,13 +100,13 @@ Operators: `equal`, `notEqual`, `greaterThan`, `lessThan`, `greaterThanOrEqual`,
 
 ```typescript
 addRule(plugin, {
-  type: 'expression',
-  range: 'E1:E10',
-  formula: '$A1>10',
-  style: { bgColor: '#FFFF00' }
+  type: "expression",
+  range: "E1:E10",
+  formula: "$A1>10",
+  style: { bgColor: "#FFFF00" },
 });
 ```
 
 ## License
 
-Elastic-2.0
+[O'Sassy](https://osaasy.dev)

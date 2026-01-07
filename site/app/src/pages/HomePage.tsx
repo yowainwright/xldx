@@ -1,24 +1,17 @@
 import { Hero } from "@/components/Hero";
-import { Features } from "@/components/Features";
-import { CodeExample } from "@/components/CodeExample";
+import { Stats } from "@/components/Stats";
+import { FeatureDemos } from "@/components/FeatureDemos";
+import { WhySection } from "@/components/WhySection";
 import { Demo } from "@/components/Demo";
-import { FEATURES, EXAMPLE_CODE, EXAMPLE_EXCEL_PREVIEW } from "./constants";
-import { Package, Feather, FileSpreadsheet, Globe } from "lucide-react";
-
-const featuresWithIcons = [
-  { ...FEATURES[0], icon: <Package className="h-6 w-6" /> },
-  { ...FEATURES[1], icon: <Feather className="h-6 w-6" /> },
-  { ...FEATURES[2], icon: <FileSpreadsheet className="h-6 w-6" /> },
-  { ...FEATURES[3], icon: <Globe className="h-6 w-6" /> },
-];
+import { Comparison } from "@/components/Comparison";
 
 export function HomePage() {
   return (
-    <>
+    <main>
       <Hero
-        title="xldx"
-        highlight=""
-        description="A lightweight, dependency-free library for generating XLSX files in the browser and Node.js."
+        title="The Fastest, Lightest"
+        highlight="Excel Generator"
+        description="Create XLSX files with zero dependencies. Under 17KB. Works everywhere."
         primaryCta={{ label: "Get Started", href: "/docs" }}
         secondaryCta={{
           label: "GitHub",
@@ -27,17 +20,15 @@ export function HomePage() {
         installCommand="xldx"
       />
 
-      <Features title="Why xldx?" features={featuresWithIcons} />
+      <Stats />
 
-      <CodeExample
-        title="Simple to Use"
-        description="Create Excel files in just a few lines of code."
-        code={EXAMPLE_CODE}
-        filename="example.ts"
-        excelPreview={EXAMPLE_EXCEL_PREVIEW}
-      />
+      <FeatureDemos />
+
+      <WhySection />
 
       <Demo />
-    </>
+
+      <Comparison />
+    </main>
   );
 }
