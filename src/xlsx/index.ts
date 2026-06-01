@@ -1,5 +1,7 @@
 import { MiniZip, MiniUnzip } from "../zip/index";
+import type { Relationship } from "../types";
 import type {
+  Cell,
   CellValue,
   Worksheet,
   CellResult,
@@ -20,7 +22,6 @@ import type {
   ParsedCell,
 } from "./types";
 import {
-  COLUMN_CACHE,
   XML_DECLARATION,
   CONTENT_TYPES_HEADER,
   CONTENT_TYPES_DEFAULTS,
@@ -34,7 +35,6 @@ import {
   SHARED_STRINGS_REL_TYPE,
   SPREADSHEET_NAMESPACE,
   RELATIONSHIPS_NAMESPACE,
-  DEFAULT_STYLES_XML,
   ROOT_RELS_XML,
   PARSE_NUM_FMT,
   PARSE_FONTS_SECTION,
@@ -70,6 +70,7 @@ import {
   PARSE_APPLY_FILL,
   PARSE_APPLY_BORDER,
   PARSE_APPLY_ALIGNMENT,
+  columnIndexToLetters,
 } from "./constants";
 import {
   escapeXml,
@@ -107,15 +108,29 @@ export function relationship(id: number, type: string, target: string): string {
   return `<Relationship Id="rId${id}" Type="${type}" Target="${target}"/>`;
 }
 
+export function relationshipWithId(rel: Relationship): string {
+  return `<Relationship Id="${escapeXml(rel.id)}" Type="${escapeXml(rel.type)}" Target="${escapeXml(rel.target)}"/>`;
+}
+
 export function override(partName: string, contentType: string): string {
   return `<Override PartName="${partName}" ContentType="${contentType}"/>`;
 }
 
-export function generateContentTypes(worksheetCount: number): string {
+export function generateContentTypes(
+  worksheetCount: number,
+  additionalTypes: readonly string[] = [],
+): string {
+  const additionalDefaults = additionalTypes.filter((type) =>
+    type.startsWith("<Default"),
+  );
+  const additionalOverrides = additionalTypes.filter(
+    (type) => !type.startsWith("<Default"),
+  );
   const parts = [
     XML_DECLARATION,
     CONTENT_TYPES_HEADER,
     CONTENT_TYPES_DEFAULTS,
+    ...additionalDefaults,
     override("/xl/workbook.xml", WORKBOOK_CONTENT_TYPE),
   ];
 
@@ -127,6 +142,7 @@ export function generateContentTypes(worksheetCount: number): string {
 
   parts.push(override("/xl/styles.xml", STYLES_CONTENT_TYPE));
   parts.push(override("/xl/sharedStrings.xml", SHARED_STRINGS_CONTENT_TYPE));
+  parts.push(...additionalOverrides);
   parts.push("</Types>");
 
   return parts.join("");
@@ -149,7 +165,10 @@ export function generateWorkbook(worksheets: readonly Worksheet[]): string {
   return parts.join("");
 }
 
-export function generateWorkbookRels(worksheetCount: number): string {
+export function generateWorkbookRels(
+  worksheetCount: number,
+  additionalRelationships: readonly Relationship[] = [],
+): string {
   const parts = [XML_DECLARATION, `<Relationships xmlns="${RELS_NAMESPACE}">`];
 
   for (let i = 0; i < worksheetCount; i++) {
@@ -166,6 +185,7 @@ export function generateWorkbookRels(worksheetCount: number): string {
       "sharedStrings.xml",
     ),
   );
+  parts.push(...additionalRelationships.map(relationshipWithId));
   parts.push("</Relationships>");
 
   return parts.join("");
@@ -182,17 +202,293 @@ export function generateColumnDefinitions(widths: readonly number[]): string {
   return parts.join("");
 }
 
+type StyleRecord = Record<string, unknown>;
+
+export interface StyleRegistry {
+  readonly styles: readonly StyleRecord[];
+  getStyleIndex(style: unknown): number | undefined;
+}
+
+function isStyleRecord(value: unknown): value is StyleRecord {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function extractCellStyle(cell: CellValue): StyleRecord | undefined {
+  const isObject =
+    typeof cell === "object" && cell !== null && !(cell instanceof Date);
+  if (!isObject || !("style" in cell)) return undefined;
+
+  const style = (cell as Cell).style;
+  return isStyleRecord(style) && Object.keys(style).length > 0
+    ? style
+    : undefined;
+}
+
+function sortedValue(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(sortedValue);
+  if (!isStyleRecord(value)) return value;
+
+  return Object.keys(value)
+    .sort()
+    .reduce((acc, key) => {
+      acc[key] = sortedValue(value[key]);
+      return acc;
+    }, {} as StyleRecord);
+}
+
+function stableStyleKey(style: StyleRecord): string {
+  return JSON.stringify(sortedValue(style));
+}
+
+export function createStyleRegistry(
+  worksheets: readonly Worksheet[],
+): StyleRegistry {
+  const styles: StyleRecord[] = [];
+  const styleMap = new Map<string, number>();
+
+  for (const sheet of worksheets) {
+    for (const row of sheet.data) {
+      for (const cell of row) {
+        const style = extractCellStyle(cell);
+        if (!style) continue;
+
+        const key = stableStyleKey(style);
+        if (styleMap.has(key)) continue;
+
+        styles.push(style);
+        styleMap.set(key, styles.length);
+      }
+    }
+  }
+
+  return {
+    styles,
+    getStyleIndex(style: unknown): number | undefined {
+      if (!isStyleRecord(style) || Object.keys(style).length === 0) {
+        return undefined;
+      }
+
+      return styleMap.get(stableStyleKey(style));
+    },
+  };
+}
+
+function styleSection(
+  style: StyleRecord,
+  key: string,
+): StyleRecord | undefined {
+  const value = style[key];
+  return isStyleRecord(value) ? value : undefined;
+}
+
+function styleString(style: StyleRecord, key: string): string | undefined {
+  const value = style[key];
+  return typeof value === "string" ? value : undefined;
+}
+
+function styleNumber(style: StyleRecord, key: string): number | undefined {
+  const value = style[key];
+  return typeof value === "number" ? value : undefined;
+}
+
+function styleBoolean(style: StyleRecord, key: string): boolean | undefined {
+  const value = style[key];
+  return typeof value === "boolean" ? value : undefined;
+}
+
+function normalizeColor(color: unknown): string | undefined {
+  if (typeof color !== "string" || color.length === 0) return undefined;
+
+  let normalized = color.replace(/^#/, "").toUpperCase();
+  if (normalized.length === 6) normalized = `FF${normalized}`;
+  return normalized.length === 8 ? normalized : undefined;
+}
+
+function generateFontXml(font?: StyleRecord): string {
+  if (!font) return '<font><sz val="11"/><name val="Calibri"/></font>';
+
+  const parts: string[] = [];
+  if (styleBoolean(font, "bold")) parts.push("<b/>");
+  if (styleBoolean(font, "italic")) parts.push("<i/>");
+  if (styleBoolean(font, "underline")) parts.push("<u/>");
+  if (styleBoolean(font, "strike")) parts.push("<strike/>");
+
+  const size = styleNumber(font, "size");
+  if (size !== undefined) parts.push(`<sz val="${size}"/>`);
+
+  const color = normalizeColor(styleString(font, "color"));
+  if (color) parts.push(`<color rgb="${color}"/>`);
+
+  const name = styleString(font, "name");
+  if (name) parts.push(`<name val="${escapeXml(name)}"/>`);
+
+  return `<font>${parts.join("")}</font>`;
+}
+
+function generateFillXml(fill?: StyleRecord): string {
+  const color = normalizeColor(fill?.fgColor ?? fill?.color ?? fill?.bgColor);
+  if (!color) return "";
+
+  const pattern = styleString(fill!, "pattern") || "solid";
+  return `<fill><patternFill patternType="${escapeXml(pattern)}"><fgColor rgb="${color}"/><bgColor indexed="64"/></patternFill></fill>`;
+}
+
+function generateBorderSideXml(sideName: string, side?: StyleRecord): string {
+  const borderStyle = styleString(side || {}, "style");
+  const hasBorder = borderStyle && borderStyle !== "none";
+  if (!hasBorder) return `<${sideName}/>`;
+
+  const color = normalizeColor(side?.color);
+  const colorXml = color ? `<color rgb="${color}"/>` : "";
+  return `<${sideName} style="${escapeXml(borderStyle)}">${colorXml}</${sideName}>`;
+}
+
+function generateBorderXml(border?: StyleRecord): string {
+  if (!border) {
+    return "<border><left/><right/><top/><bottom/><diagonal/></border>";
+  }
+
+  return `<border>${generateBorderSideXml("left", styleSection(border, "left"))}${generateBorderSideXml("right", styleSection(border, "right"))}${generateBorderSideXml("top", styleSection(border, "top"))}${generateBorderSideXml("bottom", styleSection(border, "bottom"))}<diagonal/></border>`;
+}
+
+function generateAlignmentXml(alignment?: StyleRecord): string {
+  if (!alignment) return "";
+
+  const attrs: string[] = [];
+  const horizontal = styleString(alignment, "horizontal");
+  const vertical = styleString(alignment, "vertical");
+  const indent = styleNumber(alignment, "indent");
+  const readingOrder = styleNumber(alignment, "readingOrder");
+  const textRotation = styleNumber(alignment, "textRotation");
+
+  if (horizontal) attrs.push(`horizontal="${escapeXml(horizontal)}"`);
+  if (vertical) attrs.push(`vertical="${escapeXml(vertical)}"`);
+  if (styleBoolean(alignment, "wrapText") !== undefined) {
+    attrs.push(`wrapText="${styleBoolean(alignment, "wrapText") ? 1 : 0}"`);
+  }
+  if (styleBoolean(alignment, "shrinkToFit") !== undefined) {
+    attrs.push(
+      `shrinkToFit="${styleBoolean(alignment, "shrinkToFit") ? 1 : 0}"`,
+    );
+  }
+  if (indent !== undefined) attrs.push(`indent="${indent}"`);
+  if (readingOrder !== undefined) attrs.push(`readingOrder="${readingOrder}"`);
+  if (textRotation !== undefined) attrs.push(`textRotation="${textRotation}"`);
+
+  return attrs.length > 0 ? `<alignment ${attrs.join(" ")}/>` : "";
+}
+
+interface StyleIds {
+  fontId: number;
+  fillId: number;
+  borderId: number;
+  numFmtId: number;
+  applyFont: boolean;
+  applyFill: boolean;
+  applyBorder: boolean;
+  applyAlignment: boolean;
+  applyNumberFormat: boolean;
+  alignment?: StyleRecord;
+}
+
+export function generateStylesXml(styles: readonly StyleRecord[] = []): string {
+  const fontXml = [generateFontXml()];
+  const fillXml = [
+    '<fill><patternFill patternType="none"/></fill>',
+    '<fill><patternFill patternType="gray125"/></fill>',
+  ];
+  const borderXml = [generateBorderXml()];
+  const numFmts: string[] = [];
+  const styleIds: StyleIds[] = [];
+  const numFmtMap = new Map<string, number>();
+  let nextNumFmtId = 164;
+
+  for (const style of styles) {
+    const font = styleSection(style, "font");
+    const fill = styleSection(style, "fill");
+    const border = styleSection(style, "border");
+    const alignment = styleSection(style, "alignment");
+    const numberFormat =
+      styleString(style, "numFmt") || styleString(style, "numberFormat");
+
+    let numFmtId = 0;
+    if (numberFormat) {
+      const existing = numFmtMap.get(numberFormat);
+      if (existing !== undefined) {
+        numFmtId = existing;
+      } else {
+        numFmtId = nextNumFmtId++;
+        numFmtMap.set(numberFormat, numFmtId);
+        numFmts.push(
+          `<numFmt numFmtId="${numFmtId}" formatCode="${escapeXml(numberFormat)}"/>`,
+        );
+      }
+    }
+
+    const customFill = generateFillXml(fill);
+    const customBorder = generateBorderXml(border);
+
+    const fontId = font ? fontXml.push(generateFontXml(font)) - 1 : 0;
+    const fillId = customFill ? fillXml.push(customFill) - 1 : 0;
+    const borderId = border ? borderXml.push(customBorder) - 1 : 0;
+
+    styleIds.push({
+      fontId,
+      fillId,
+      borderId,
+      numFmtId,
+      applyFont: Boolean(font),
+      applyFill: fillId !== 0,
+      applyBorder: Boolean(border),
+      applyAlignment: Boolean(alignment),
+      applyNumberFormat: Boolean(numberFormat),
+      alignment,
+    });
+  }
+
+  const numFmtsXml =
+    numFmts.length > 0
+      ? `<numFmts count="${numFmts.length}">${numFmts.join("")}</numFmts>`
+      : "";
+  const cellXfs = [
+    '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>',
+    ...styleIds.map((ids) => {
+      const attrs = [
+        `numFmtId="${ids.numFmtId}"`,
+        `fontId="${ids.fontId}"`,
+        `fillId="${ids.fillId}"`,
+        `borderId="${ids.borderId}"`,
+        'xfId="0"',
+      ];
+      if (ids.applyFont) attrs.push('applyFont="1"');
+      if (ids.applyFill) attrs.push('applyFill="1"');
+      if (ids.applyBorder) attrs.push('applyBorder="1"');
+      if (ids.applyAlignment) attrs.push('applyAlignment="1"');
+      if (ids.applyNumberFormat) attrs.push('applyNumberFormat="1"');
+
+      const alignmentXml = generateAlignmentXml(ids.alignment);
+      return alignmentXml
+        ? `<xf ${attrs.join(" ")}>${alignmentXml}</xf>`
+        : `<xf ${attrs.join(" ")}/>`;
+    }),
+  ];
+
+  return `${XML_DECLARATION}<styleSheet xmlns="${SPREADSHEET_NAMESPACE}">${numFmtsXml}<fonts count="${fontXml.length}">${fontXml.join("")}</fonts><fills count="${fillXml.length}">${fillXml.join("")}</fills><borders count="${borderXml.length}">${borderXml.join("")}</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="${cellXfs.length}">${cellXfs.join("")}</cellXfs></styleSheet>`;
+}
+
 export function generateCell(
   colIndex: number,
   rowIndex: number,
   result: CellResult,
   formula?: string,
 ): string {
-  const cellRef = COLUMN_CACHE[colIndex] + (rowIndex + 1);
+  const cellRef = columnIndexToLetters(colIndex) + (rowIndex + 1);
+  const styleAttr =
+    result.styleIndex !== undefined ? ` s="${result.styleIndex}"` : "";
   const typeAttr = result.type ? ` t="${result.type}"` : "";
   const formulaXml = formula ? `<f>${escapeXml(formula)}</f>` : "";
   const valueXml = result.value !== "" ? `<v>${result.value}</v>` : "";
-  return `<c r="${cellRef}"${typeAttr}>${formulaXml}${valueXml}</c>`;
+  return `<c r="${cellRef}"${styleAttr}${typeAttr}>${formulaXml}${valueXml}</c>`;
 }
 
 export function generateRow(
@@ -200,6 +496,7 @@ export function generateRow(
   rowIndex: number,
   addSharedString: (str: string) => number,
   rowHeight?: number,
+  styleRegistry?: StyleRegistry,
 ): string {
   const cellParts: string[] = [];
 
@@ -215,8 +512,11 @@ export function generateRow(
     const finalResult = isString
       ? { type: "s", value: String(addSharedString(result.value)) }
       : result;
+    const styleIndex = styleRegistry?.getStyleIndex(extractCellStyle(cell));
+    const styledResult =
+      styleIndex !== undefined ? { ...finalResult, styleIndex } : finalResult;
 
-    cellParts.push(generateCell(colIndex, rowIndex, finalResult, formula));
+    cellParts.push(generateCell(colIndex, rowIndex, styledResult, formula));
   }
 
   const isEmpty = cellParts.length === 0;
@@ -227,7 +527,7 @@ export function generateRow(
 }
 
 export function cellRef(col: number, row: number): string {
-  return COLUMN_CACHE[col] + (row + 1);
+  return columnIndexToLetters(col) + (row + 1);
 }
 
 export function generateMergedCells(mergedCells: readonly MergeCell[]): string {
@@ -254,6 +554,7 @@ export function generateFrozenPane(frozen: FrozenPane): string {
 export function generateWorksheet(
   sheet: Worksheet,
   addSharedString: (str: string) => number,
+  styleRegistry?: StyleRegistry,
 ): string {
   const parts = [
     XML_DECLARATION,
@@ -281,6 +582,7 @@ export function generateWorksheet(
       rowIndex,
       addSharedString,
       height,
+      styleRegistry,
     );
     const hasRow = rowXml !== "";
     if (hasRow) parts.push(rowXml);
@@ -305,7 +607,9 @@ export function generateSharedStrings(strings: readonly string[]): string {
   ];
 
   for (let i = 0; i < count; i++) {
-    parts.push(`<si><t>${escapeXml(strings[i])}</t></si>`);
+    const preserveSpace = /^\s|\s$|\n|\r/.test(strings[i]);
+    const spaceAttr = preserveSpace ? ' xml:space="preserve"' : "";
+    parts.push(`<si><t${spaceAttr}>${escapeXml(strings[i])}</t></si>`);
   }
 
   parts.push("</sst>");
@@ -314,7 +618,7 @@ export function generateSharedStrings(strings: readonly string[]): string {
 
 export function parseSharedStrings(content: string): string[] {
   const strings: string[] = [];
-  const regex = /<t[^>]*>(.*?)<\/t>/g;
+  const regex = /<t[^>]*>([\s\S]*?)<\/t>/g;
   let match;
 
   while ((match = regex.exec(content)) !== null) {
@@ -359,8 +663,7 @@ export function parseWorksheetContent(
 ): unknown[][] {
   const rows: unknown[][] = [];
   const rowRegex = /<row[^>]*r="(\d+)"[^>]*>([\s\S]*?)<\/row>/g;
-  const cellRegex =
-    /<c\s+r="([A-Z]+)(\d+)"(?:\s+t="([^"]*)")?[^>]*>[\s\S]*?<v>([^<]*)<\/v>/g;
+  const cellRegex = /<c\s+r="([A-Z]+)(\d+)"([^>]*)>[\s\S]*?<v>([^<]*)<\/v>/g;
 
   let rowMatch;
   while ((rowMatch = rowRegex.exec(content)) !== null) {
@@ -372,7 +675,8 @@ export function parseWorksheetContent(
     cellRegex.lastIndex = 0;
     while ((cellMatch = cellRegex.exec(rowContent)) !== null) {
       const colLetters = cellMatch[1];
-      const type = cellMatch[3];
+      const attrs = cellMatch[3];
+      const type = attrs.match(/\st="([^"]*)"/)?.[1];
       const value = cellMatch[4];
 
       const colIndex = lettersToColumnIndex(colLetters);
@@ -656,7 +960,12 @@ export class XlsxWriter {
   private sharedStrings: string[] = [];
   private stringMap: Map<string, number> = new Map();
 
-  addWorksheet(name: string, data: unknown[][], columnWidths?: number[]): void {
+  addWorksheet(
+    name: string,
+    data: unknown[][],
+    columnWidths?: number[],
+    options: Pick<Worksheet, "rowHeights" | "mergedCells" | "frozen"> = {},
+  ): void {
     const cells: CellValue[][] = data.map((row) =>
       row.map((value) => {
         const isComplexObject =
@@ -667,7 +976,16 @@ export class XlsxWriter {
       }),
     );
 
-    this.worksheets.push({ name, data: cells, columnWidths });
+    this.worksheets.push({ name, data: cells, columnWidths, ...options });
+  }
+
+  getWorksheets(): readonly Worksheet[] {
+    return this.worksheets;
+  }
+
+  private resetSharedStrings(): void {
+    this.sharedStrings = [];
+    this.stringMap = new Map();
   }
 
   private addSharedString = (str: string): number => {
@@ -681,65 +999,66 @@ export class XlsxWriter {
     return index;
   };
 
-  generate(): Uint8Array {
-    const zip = new MiniZip();
+  generateFiles(
+    options: {
+      contentTypes?: readonly string[];
+      relationships?: readonly Relationship[];
+    } = {},
+  ): Map<string, string | Uint8Array> {
+    this.resetSharedStrings();
+    const files = new Map<string, string | Uint8Array>();
+    const styleRegistry = createStyleRegistry(this.worksheets);
 
     const worksheetXml = this.worksheets.map((sheet) =>
-      generateWorksheet(sheet, this.addSharedString),
+      generateWorksheet(sheet, this.addSharedString, styleRegistry),
     );
 
-    zip.addFile(
+    files.set(
       "[Content_Types].xml",
-      generateContentTypes(this.worksheets.length),
+      generateContentTypes(this.worksheets.length, options.contentTypes || []),
     );
-    zip.addFile("_rels/.rels", ROOT_RELS_XML);
-    zip.addFile("xl/workbook.xml", generateWorkbook(this.worksheets));
-    zip.addFile(
+    files.set("_rels/.rels", ROOT_RELS_XML);
+    files.set("xl/workbook.xml", generateWorkbook(this.worksheets));
+    files.set(
       "xl/_rels/workbook.xml.rels",
-      generateWorkbookRels(this.worksheets.length),
+      generateWorkbookRels(this.worksheets.length, options.relationships || []),
     );
-    zip.addFile("xl/styles.xml", DEFAULT_STYLES_XML);
-    zip.addFile(
+    files.set("xl/styles.xml", generateStylesXml(styleRegistry.styles));
+    files.set(
       "xl/sharedStrings.xml",
       generateSharedStrings(this.sharedStrings),
     );
 
     for (let i = 0; i < worksheetXml.length; i++) {
-      zip.addFile(`xl/worksheets/sheet${i + 1}.xml`, worksheetXml[i]);
+      files.set(`xl/worksheets/sheet${i + 1}.xml`, worksheetXml[i]);
     }
 
-    return zip.generate();
+    return files;
+  }
+
+  generate(): Uint8Array {
+    return zipWorkbookFiles(this.generateFiles());
   }
 
   async generateCompressed(): Promise<Uint8Array> {
-    const zip = new MiniZip();
-
-    const worksheetXml = this.worksheets.map((sheet) =>
-      generateWorksheet(sheet, this.addSharedString),
-    );
-
-    zip.addFile(
-      "[Content_Types].xml",
-      generateContentTypes(this.worksheets.length),
-    );
-    zip.addFile("_rels/.rels", ROOT_RELS_XML);
-    zip.addFile("xl/workbook.xml", generateWorkbook(this.worksheets));
-    zip.addFile(
-      "xl/_rels/workbook.xml.rels",
-      generateWorkbookRels(this.worksheets.length),
-    );
-    zip.addFile("xl/styles.xml", DEFAULT_STYLES_XML);
-    zip.addFile(
-      "xl/sharedStrings.xml",
-      generateSharedStrings(this.sharedStrings),
-    );
-
-    for (let i = 0; i < worksheetXml.length; i++) {
-      zip.addFile(`xl/worksheets/sheet${i + 1}.xml`, worksheetXml[i]);
-    }
-
-    return zip.generateCompressed();
+    return zipWorkbookFilesCompressed(this.generateFiles());
   }
+}
+
+export function zipWorkbookFiles(
+  files: ReadonlyMap<string, string | Uint8Array>,
+): Uint8Array {
+  const zip = new MiniZip();
+  files.forEach((content, path) => zip.addFile(path, content));
+  return zip.generate();
+}
+
+export function zipWorkbookFilesCompressed(
+  files: ReadonlyMap<string, string | Uint8Array>,
+): Promise<Uint8Array> {
+  const zip = new MiniZip();
+  files.forEach((content, path) => zip.addFile(path, content));
+  return zip.generateCompressed();
 }
 
 export class XlsxReader {

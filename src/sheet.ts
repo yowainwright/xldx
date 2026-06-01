@@ -12,6 +12,7 @@ import {
   buildPatternContext,
   resolveCellStyles,
   createSetWidthBasedOnCharacterCount,
+  mergeCellStyles,
 } from "./utils";
 
 export class Sheet {
@@ -73,7 +74,16 @@ export class Sheet {
           allData: this.data,
         });
 
-        return this.applyPatternStyles(rowData[col.key], context, col.patterns);
+        const baseStyle = resolveCellStyles({
+          column: col,
+          rowIndex,
+          defaultStyle: this.options.defaultStyle,
+        });
+        const patternStyle = this.resolvePatternStyles(context, col.patterns);
+        const style = mergeCellStyles(baseStyle, patternStyle);
+        const value = rowData[col.key];
+
+        return Object.keys(style).length > 0 ? { value, style } : value;
       });
     });
 
@@ -81,27 +91,28 @@ export class Sheet {
     return dataArray;
   }
 
-  private applyPatternStyles(
-    value: unknown,
+  private resolvePatternStyles(
     context: PatternContext,
     patterns: ColumnDefinition["patterns"],
-  ): unknown {
+  ): CellStyle | undefined {
     const hasNoPatterns = !patterns;
-    if (hasNoPatterns) return value;
+    if (hasNoPatterns) return undefined;
 
-    applyPattern(patterns.bgColorPattern, context, this.customPatterns);
-    applyPattern(patterns.textPattern, context, this.customPatterns);
+    const patternStyles: Array<Partial<CellStyle> | null> = [
+      applyPattern(patterns.bgColorPattern, context, this.customPatterns),
+      applyPattern(patterns.textPattern, context, this.customPatterns),
+    ];
     const hasCustomPatterns = patterns.custom && patterns.custom.length > 0;
 
     if (hasCustomPatterns) {
-      patterns
-        .custom!.map((pattern) =>
+      patternStyles.push(
+        ...patterns.custom!.map((pattern) =>
           applyPattern(pattern, context, this.customPatterns),
-        )
-        .filter((style) => style !== null);
+        ),
+      );
     }
 
-    return value;
+    return mergeCellStyles(...patternStyles);
   }
 
   public getRowsData(): DataRow[] {
@@ -160,6 +171,7 @@ export class Sheet {
       }
       column.rows![rowIndex + 2] = styles;
     });
+    this.processedData = this.buildProcessedData();
   }
 
   public updateColumnStyles(columnKey: string, styles: CellStyle): void {
@@ -168,6 +180,7 @@ export class Sheet {
     if (hasNoColumn) return;
 
     column.style = { ...column.style, ...styles };
+    this.processedData = this.buildProcessedData();
   }
 
   public updateRowData(rowIndex: number, data: DataRow): void {
@@ -238,14 +251,47 @@ export class Sheet {
     };
   }
 
-  public toWorksheetData(): { data: any[][]; columnWidths?: number[] } {
+  public getColumns(): ColumnDefinition[] {
+    return this.columns.map((column) => ({
+      ...column,
+      style: column.style ? { ...column.style } : undefined,
+      patterns: column.patterns ? { ...column.patterns } : undefined,
+      rows: column.rows ? { ...column.rows } : undefined,
+    }));
+  }
+
+  public getOptions(): SheetOptions {
+    return { ...this.options };
+  }
+
+  public toWorksheetData(): {
+    data: any[][];
+    columnWidths?: number[];
+    rowHeights?: number[];
+    frozen?: { rows?: number; cols?: number };
+  } {
     const columnWidths = this.columns
       .map((col) => this.calculateColumnWidth(col))
       .filter((width) => width !== undefined) as number[];
+    const rowHeights =
+      this.options.defaultRowHeight !== undefined
+        ? Array.from(
+            { length: this.processedData.length },
+            () => this.options.defaultRowHeight!,
+          )
+        : undefined;
+    const frozen = this.options.freezePane
+      ? {
+          rows: this.options.freezePane.row,
+          cols: this.options.freezePane.column,
+        }
+      : undefined;
 
     return {
       data: this.processedData,
       columnWidths: columnWidths.length > 0 ? columnWidths : undefined,
+      rowHeights,
+      frozen,
     };
   }
 }

@@ -1,6 +1,6 @@
 import type { CellValue } from "./types";
 import {
-  COLUMN_CACHE,
+  columnIndexToLetters,
   XML_DECLARATION,
   SPREADSHEET_NAMESPACE,
 } from "./constants";
@@ -41,7 +41,7 @@ export function streamRow(
     const value = isString
       ? String(addSharedString(result.value))
       : result.value;
-    const cellRef = COLUMN_CACHE[colIndex] + rowNum;
+    const cellRef = columnIndexToLetters(colIndex) + rowNum;
     const type = isString ? "s" : result.type;
 
     cellXml += type
@@ -81,7 +81,9 @@ export function generateSharedStringsChunk(
   ];
 
   for (const str of strings) {
-    parts.push(`<si><t>${escapeXml(str)}</t></si>`);
+    const preserveSpace = /^\s|\s$|\n|\r/.test(str);
+    const spaceAttr = preserveSpace ? ' xml:space="preserve"' : "";
+    parts.push(`<si><t${spaceAttr}>${escapeXml(str)}</t></si>`);
   }
 
   parts.push("</sst>");

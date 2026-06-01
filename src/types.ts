@@ -191,6 +191,9 @@ export interface SerializedSheet {
   name: string;
   data: unknown[][];
   columnWidths?: number[];
+  rows?: DataRow[];
+  columns?: ColumnDefinition[];
+  options?: SheetOptions;
 }
 
 export interface SerializedWorkbook {

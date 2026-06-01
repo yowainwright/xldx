@@ -19,7 +19,7 @@ import {
   writeUint16,
   writeUint32,
 } from "./utils";
-import { inflate } from "./compress";
+import { inflate, inflateSync } from "./compress";
 
 export type {
   FileEntry,
@@ -31,7 +31,7 @@ export type {
 export * from "./constants";
 export * from "./utils";
 export { buildCrc32Table } from "./crc32";
-export { deflate, inflate, supportsCompression } from "./compress";
+export { deflate, inflate, inflateSync, supportsCompression } from "./compress";
 
 export function writeLocalHeader(
   view: DataView,
@@ -261,7 +261,18 @@ export function findFile(
 ): string | null {
   return iterateEntries(data, view, (entry) => {
     const isMatch = entry.fileName === targetPath;
-    return isMatch ? decodeBytes(entry.content) : null;
+    if (!isMatch) return null;
+
+    const isCompressed = entry.compressionMethod !== 0;
+    if (!isCompressed) return decodeBytes(entry.content);
+
+    const content = inflateSync(entry.content);
+    if (!content) {
+      throw new Error(
+        `Cannot synchronously inflate "${targetPath}": runtime lacks a sync inflate. Use getFileAsync instead.`,
+      );
+    }
+    return decodeBytes(content);
   });
 }
 

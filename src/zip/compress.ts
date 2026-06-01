@@ -22,3 +22,15 @@ export async function inflate(data: Uint8Array): Promise<Uint8Array> {
   );
   return new Uint8Array(await new Response(decompressed).arrayBuffer());
 }
+
+interface BunCompression {
+  inflateSync?: (data: Uint8Array) => Uint8Array | ArrayBuffer;
+}
+
+export function inflateSync(data: Uint8Array): Uint8Array | null {
+  const bun = (globalThis as { Bun?: BunCompression }).Bun;
+  const result = bun?.inflateSync?.(data);
+  if (!result) return null;
+
+  return result instanceof Uint8Array ? result : new Uint8Array(result);
+}

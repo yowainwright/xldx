@@ -1,5 +1,6 @@
 import { describe, it, expect } from "bun:test";
 import { Xldx } from "../src/server";
+import { MiniUnzip } from "../src/zip";
 import {
   zebraBg,
   bgColorBasedOnDiff,
@@ -93,6 +94,21 @@ describe("index", () => {
       const updatedRows = sheetData.getRowsData();
       expect(updatedRows[0].age).toBe(31);
       expect(updatedRows[0].name).toBe("Alice");
+    });
+
+    it("should regenerate XLSX output after row data updates", async () => {
+      const xldx = new Xldx([{ name: "Alice", age: 30 }]);
+      xldx.createSheet(
+        { name: "People" },
+        { key: "name", header: "Name" },
+        { key: "age", header: "Age" },
+      );
+
+      const sheetData = xldx.getSheetData("People");
+      sheetData.updateRowData(0, { age: 31 });
+
+      const result = await Xldx.read(await xldx.toUint8Array());
+      expect(result.sheets[0].data[1]).toEqual(["Alice", 31]);
     });
 
     it("should update column data", () => {
@@ -434,6 +450,22 @@ describe("index", () => {
         expect(xldx).toBeInstanceOf(Xldx);
       });
 
+      it("should restore sheet APIs from exported JSON", () => {
+        const xldx = new Xldx([{ item: "test", qty: 10 }]);
+        xldx.createSheet(
+          { name: "Export" },
+          { key: "item", header: "Item" },
+          { key: "qty", header: "Quantity" },
+        );
+
+        const restored = Xldx.fromJSON(xldx.toJSON());
+
+        expect(restored.toJSON().sheets).toHaveLength(1);
+        expect(restored.getSheetData("Export").getRowsData()).toEqual([
+          { item: "test", qty: 10 },
+        ]);
+      });
+
       it("should handle empty sheets array", () => {
         const json = { sheets: [] };
         const xldx = Xldx.fromJSON(json);
@@ -582,6 +614,31 @@ describe("index", () => {
         expect(xldx.getPlugins()).toContain(plugin1);
         expect(xldx.getPlugins()).toContain(plugin2);
       });
+
+      it("should run plugin hooks while generating files", async () => {
+        let afterGenerateCalled = false;
+        const xldx = new Xldx([{ a: 1 }]);
+        xldx.use({
+          name: "custom-file",
+          version: "1.0.0",
+          afterGenerate(files: Map<string, string | Uint8Array>) {
+            afterGenerateCalled = true;
+            files.set("custom.txt", "ok");
+          },
+          getContentTypes() {
+            return [
+              '<Override PartName="/custom.txt" ContentType="text/plain"/>',
+            ];
+          },
+        });
+        xldx.createSheet({ name: "Sheet1" }, { key: "a" });
+
+        const unzip = new MiniUnzip(await xldx.toUint8Array());
+
+        expect(afterGenerateCalled).toBe(true);
+        expect(unzip.getFile("custom.txt")).toBe("ok");
+        expect(unzip.getFile("[Content_Types].xml")).toContain("/custom.txt");
+      });
     });
 
     describe("toUint8ArrayCompressed", () => {
@@ -595,6 +652,29 @@ describe("index", () => {
         expect(compressed.length).toBeGreaterThan(0);
         expect(compressed[0]).toBe(0x50);
         expect(compressed[1]).toBe(0x4b);
+      });
+
+      it("should read compressed XLSX output", async () => {
+        const xldx = new Xldx([{ a: 1 }]);
+        xldx.createSheet({ name: "Compressed" }, { key: "a" });
+
+        const result = await Xldx.read(await xldx.toUint8ArrayCompressed());
+
+        expect(result.sheets[0].name).toBe("Compressed");
+        expect(result.sheets[0].data[1]).toEqual([1]);
+      });
+
+      it("should read compressed XLSX output with styles synchronously when supported", async () => {
+        const xldx = new Xldx([{ a: 1 }]);
+        xldx.createSheet(
+          { name: "StyledCompressed" },
+          { key: "a", style: { font: { bold: true } } },
+        );
+
+        const result = Xldx.readWithStyles(await xldx.toUint8ArrayCompressed());
+
+        expect(result.sheets[0].name).toBe("StyledCompressed");
+        expect(result.sheets[0].data[1][0].style?.font?.bold).toBe(true);
       });
 
       it("should produce smaller output for repetitive content", async () => {
@@ -654,6 +734,25 @@ describe("index", () => {
 
         const styles = sheetData.getColumnStyles("name");
         expect(styles).toBeDefined();
+      });
+
+      it("should write styles and pattern results into generated XLSX", async () => {
+        const xldx = new Xldx([{ name: "Alice" }]);
+        xldx.createSheet(
+          { name: "Styled" },
+          {
+            key: "name",
+            header: "Name",
+            style: { font: { bold: true } },
+            patterns: { bgColorPattern: "zebra" },
+          },
+        );
+
+        const result = Xldx.readWithStyles(await xldx.toUint8Array());
+        const cell = result.sheets[0].data[1][0];
+
+        expect(cell.style?.font?.bold).toBe(true);
+        expect(cell.style?.fill?.color).toBe("#F3F4F6");
       });
     });
 

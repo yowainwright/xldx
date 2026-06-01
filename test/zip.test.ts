@@ -1,6 +1,11 @@
 import { describe, it, expect } from "bun:test";
 import { MiniZip, MiniUnzip } from "../src/zip";
-import { supportsCompression, deflate, inflate } from "../src/zip/compress";
+import {
+  supportsCompression,
+  deflate,
+  inflate,
+  inflateSync,
+} from "../src/zip/compress";
 import {
   encodeString,
   decodeBytes,
@@ -371,6 +376,16 @@ describe("Compression utilities", () => {
       expect(decompressed).toEqual(testData);
     });
   });
+
+  describe("inflateSync", () => {
+    it("should synchronously decompress deflated data when supported", async () => {
+      const original = new TextEncoder().encode("Hello, sync!");
+      const compressed = await deflate(original);
+      const decompressed = inflateSync(compressed);
+
+      expect(decompressed).toEqual(original);
+    });
+  });
 });
 
 describe("Zip utility functions", () => {
@@ -577,6 +592,17 @@ describe("MiniZip compressed", () => {
 
       const result = await unzip.getFileAsync("test.txt");
       expect(result).toBe(content);
+    });
+
+    it("should be readable after compression with sync method when supported", async () => {
+      const zip = new MiniZip();
+      const content = "Sync compressed content";
+      zip.addFile("test.txt", content);
+
+      const data = await zip.generateCompressed();
+      const unzip = new MiniUnzip(data);
+
+      expect(unzip.getFile("test.txt")).toBe(content);
     });
   });
 });

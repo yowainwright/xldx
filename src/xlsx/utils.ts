@@ -1,5 +1,9 @@
 import type { Cell, CellValue, CellResult } from "./types";
-import { EXCEL_EPOCH_MS, MS_PER_DAY, EXCEL_DATE_OFFSET } from "./constants";
+import {
+  EXCEL_EPOCH_MS,
+  EXCEL_1900_LEAP_BUG_CUTOFF_MS,
+  MS_PER_DAY,
+} from "./constants";
 
 const XML_ESCAPE_MAP: Record<string, string> = {
   "&": "&amp;",
@@ -76,10 +80,16 @@ export function isDate(value: unknown): value is Date {
  * @returns The Excel serial date number
  */
 export function dateToExcelSerial(date: Date): number {
-  const daysSinceEpoch = Math.floor(
-    (date.getTime() - EXCEL_EPOCH_MS) / MS_PER_DAY,
+  const utcDateMs = Date.UTC(
+    date.getUTCFullYear(),
+    date.getUTCMonth(),
+    date.getUTCDate(),
   );
-  return daysSinceEpoch + EXCEL_DATE_OFFSET;
+  const daysSinceEpoch = Math.floor((utcDateMs - EXCEL_EPOCH_MS) / MS_PER_DAY);
+
+  return utcDateMs >= EXCEL_1900_LEAP_BUG_CUTOFF_MS
+    ? daysSinceEpoch + 1
+    : daysSinceEpoch;
 }
 
 export function getCellResult(cell: CellValue): CellResult {

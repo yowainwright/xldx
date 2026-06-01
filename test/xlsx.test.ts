@@ -1,5 +1,6 @@
 import { describe, it, expect } from "bun:test";
-import { XlsxWriter, XlsxReader } from "../src/xlsx";
+import { XlsxWriter, XlsxReader, dateToExcelSerial } from "../src/xlsx";
+import { MiniUnzip } from "../src/zip";
 
 describe("XlsxWriter", () => {
   describe("addWorksheet", () => {
@@ -104,6 +105,12 @@ describe("XlsxWriter", () => {
       expect(xlsx.length).toBeGreaterThan(0);
     });
 
+    it("should convert dates consistently regardless of local timezone offset", () => {
+      expect(dateToExcelSerial(new Date("2024-01-15"))).toBe(45306);
+      expect(dateToExcelSerial(new Date(Date.UTC(2024, 0, 15)))).toBe(45306);
+      expect(dateToExcelSerial(new Date("1900-01-01"))).toBe(1);
+    });
+
     it("should handle Cell objects with value property", () => {
       const writer = new XlsxWriter();
       writer.addWorksheet("Test", [
@@ -113,6 +120,28 @@ describe("XlsxWriter", () => {
 
       const xlsx = writer.generate();
       expect(xlsx.length).toBeGreaterThan(0);
+    });
+
+    it("should write Cell object styles", () => {
+      const writer = new XlsxWriter();
+      writer.addWorksheet("Styled", [
+        [
+          {
+            value: "Important",
+            style: {
+              font: { bold: true, color: "FFFF0000" },
+              fill: { fgColor: "FFFFFF00" },
+            },
+          },
+        ],
+      ]);
+
+      const result = new XlsxReader(writer.generate()).readWithStyles();
+      const cell = result.sheets[0].data[0][0];
+
+      expect(cell.style?.font?.bold).toBe(true);
+      expect(cell.style?.font?.color).toBe("#FF0000");
+      expect(cell.style?.fill?.color).toBe("#FFFF00");
     });
 
     it("should escape XML special characters", () => {
@@ -143,11 +172,14 @@ describe("XlsxWriter", () => {
 
     it("should handle large column indices", () => {
       const writer = new XlsxWriter();
-      const row = Array(30).fill("test");
+      const row = Array(703).fill(null);
+      row[702] = "test";
       writer.addWorksheet("Wide", [row]);
 
       const xlsx = writer.generate();
-      expect(xlsx.length).toBeGreaterThan(0);
+      const sheetXml = new MiniUnzip(xlsx).getFile("xl/worksheets/sheet1.xml");
+
+      expect(sheetXml).toContain('r="AAA1"');
     });
   });
 });
@@ -234,6 +266,26 @@ describe("XlsxReader", () => {
 
       expect(result.sheets[0].data[0][0]).toBe("<tag>");
       expect(result.sheets[0].data[0][1]).toBe("&amp;");
+    });
+
+    it("should read styled string cells as strings", () => {
+      const writer = new XlsxWriter();
+      writer.addWorksheet("Styled", [
+        [{ value: "Styled text", style: { font: { bold: true } } }],
+      ]);
+
+      const result = new XlsxReader(writer.generate()).read();
+
+      expect(result.sheets[0].data[0][0]).toBe("Styled text");
+    });
+
+    it("should handle multiline shared strings", () => {
+      const writer = new XlsxWriter();
+      writer.addWorksheet("Multiline", [["line 1\nline 2"]]);
+
+      const result = new XlsxReader(writer.generate()).read();
+
+      expect(result.sheets[0].data[0][0]).toBe("line 1\nline 2");
     });
   });
 });

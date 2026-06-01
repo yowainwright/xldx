@@ -269,6 +269,45 @@ export function buildPatternContext(params: {
   };
 }
 
+export function mergeCellStyles(
+  ...styles: Array<CellStyle | null | undefined>
+): CellStyle {
+  const merged = styles.reduce<CellStyle>((mergedStyle, style) => {
+    if (!style) return mergedStyle;
+
+    return {
+      ...mergedStyle,
+      ...style,
+      font: {
+        ...mergedStyle.font,
+        ...style.font,
+      },
+      fill: {
+        ...mergedStyle.fill,
+        ...style.fill,
+      },
+      border: {
+        ...mergedStyle.border,
+        ...style.border,
+      },
+      alignment: {
+        ...mergedStyle.alignment,
+        ...style.alignment,
+      },
+    };
+  }, {} as CellStyle);
+
+  const clean = { ...merged };
+  if (clean.font && Object.keys(clean.font).length === 0) delete clean.font;
+  if (clean.fill && Object.keys(clean.fill).length === 0) delete clean.fill;
+  if (clean.border && Object.keys(clean.border).length === 0)
+    delete clean.border;
+  if (clean.alignment && Object.keys(clean.alignment).length === 0)
+    delete clean.alignment;
+
+  return clean;
+}
+
 export function resolveCellStyles(params: {
   column: ColumnDefinition;
   rowIndex: number;
@@ -281,10 +320,7 @@ export function resolveCellStyles(params: {
     return params.column.rows![actualRowIndex];
   }
 
-  return {
-    ...params.defaultStyle,
-    ...params.column.style,
-  };
+  return mergeCellStyles(params.defaultStyle, params.column.style);
 }
 
 export function buildCellProcessingData(

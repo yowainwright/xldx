@@ -66,6 +66,7 @@ export interface Worksheet {
 export interface CellResult {
   readonly type: string;
   readonly value: string;
+  readonly styleIndex?: number;
 }
 
 export interface ParsedCell {

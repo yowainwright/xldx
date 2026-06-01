@@ -18,7 +18,11 @@ function buildColumnCache(): string[] {
   return cache;
 }
 
-function columnIndexToLetters(index: number): string {
+export function columnIndexToLetters(index: number): string {
+  if (index < 0 || !Number.isInteger(index)) {
+    throw new Error(`Invalid column index: ${index}`);
+  }
+
   let col = index + 1;
   let letters = "";
   while (col > 0) {
@@ -29,7 +33,8 @@ function columnIndexToLetters(index: number): string {
   return letters;
 }
 
-export const EXCEL_EPOCH_MS = new Date(1900, 0, 1).getTime();
+export const EXCEL_EPOCH_MS = Date.UTC(1899, 11, 31);
+export const EXCEL_1900_LEAP_BUG_CUTOFF_MS = Date.UTC(1900, 2, 1);
 export const MS_PER_DAY = 86400000;
 export const EXCEL_DATE_OFFSET = 2;
 

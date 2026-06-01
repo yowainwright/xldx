@@ -1,4 +1,9 @@
-import { XlsxWriter, XlsxReader } from "./xlsx/index";
+import {
+  XlsxWriter,
+  XlsxReader,
+  zipWorkbookFiles,
+  zipWorkbookFilesCompressed,
+} from "./xlsx/index";
 import { Sheet } from "./sheet";
 import type {
   CellStyle,
@@ -16,8 +21,13 @@ import type {
   SerializedWorkbook,
   SerializedSheet,
   XldxPlugin,
+  Relationship,
 } from "./types";
-import type { WorkbookData, WorkbookDataWithStyles } from "./xlsx/types";
+import type {
+  WorkbookData,
+  WorkbookDataWithStyles,
+  Worksheet as XlsxWorksheet,
+} from "./xlsx/types";
 import {
   setTheme,
   zebraBg,
@@ -33,7 +43,6 @@ export * from "./types";
 export { Sheet } from "./sheet";
 
 export class Xldx {
-  protected writer: XlsxWriter;
   protected data: DataRow[] | SheetsData;
   protected customPatterns: Record<string, PatternFunction>;
   protected currentSheetData: DataRow[] = [];
@@ -49,7 +58,6 @@ export class Xldx {
   public readonly customizeInput = customizeInput.bind(this);
 
   constructor(data: DataRow[] | SheetsData, options: XldxOptions = {}) {
-    this.writer = new XlsxWriter();
     this.data = data;
     this.customPatterns = options.customPatterns || {};
 
@@ -138,13 +146,6 @@ export class Xldx {
 
     this.sheets.set(options.name, sheet);
 
-    const worksheetData = sheet.toWorksheetData();
-    this.writer.addWorksheet(
-      options.name,
-      worksheetData.data,
-      worksheetData.columnWidths || [],
-    );
-
     return this;
   }
 
@@ -155,12 +156,66 @@ export class Xldx {
     return this;
   }
 
+  protected buildWriter(): XlsxWriter {
+    const writer = new XlsxWriter();
+
+    Array.from(this.sheets.entries()).forEach(([name, sheet]) => {
+      const worksheetData = sheet.toWorksheetData();
+      writer.addWorksheet(
+        name,
+        worksheetData.data,
+        worksheetData.columnWidths,
+        {
+          rowHeights: worksheetData.rowHeights,
+          frozen: worksheetData.frozen,
+        },
+      );
+    });
+
+    return writer;
+  }
+
+  protected collectPluginContentTypes(): readonly string[] {
+    return this.plugins.flatMap((plugin) => [
+      ...(plugin.getContentTypes?.() || []),
+    ]);
+  }
+
+  protected collectPluginRelationships(): readonly Relationship[] {
+    return this.plugins.flatMap((plugin) => [
+      ...(plugin.getRelationships?.() || []),
+    ]);
+  }
+
+  protected generateFiles(): Map<string, string | Uint8Array> {
+    const writer = this.buildWriter();
+    const extraFiles = new Map<string, string | Uint8Array>();
+    const context = {
+      worksheets: writer.getWorksheets() as readonly XlsxWorksheet[],
+      addFile: (path: string, content: string | Uint8Array) => {
+        extraFiles.set(path, content);
+      },
+      getFile: (path: string) => extraFiles.get(path),
+    };
+
+    this.plugins.forEach((plugin) => plugin.beforeGenerate?.(context));
+
+    const files = writer.generateFiles({
+      contentTypes: this.collectPluginContentTypes(),
+      relationships: this.collectPluginRelationships(),
+    });
+    extraFiles.forEach((content, path) => files.set(path, content));
+    this.plugins.forEach((plugin) => plugin.afterGenerate?.(files));
+
+    return files;
+  }
+
   async toUint8Array(): Promise<Uint8Array> {
-    return this.writer.generate();
+    return zipWorkbookFiles(this.generateFiles());
   }
 
   async toUint8ArrayCompressed(): Promise<Uint8Array> {
-    return this.writer.generateCompressed();
+    return zipWorkbookFilesCompressed(this.generateFiles());
   }
 
   toJSON(): SerializedWorkbook {
@@ -171,6 +226,9 @@ export class Xldx {
           name,
           data: worksheetData.data,
           columnWidths: worksheetData.columnWidths,
+          rows: sheet.getRowsData(),
+          columns: sheet.getColumns(),
+          options: sheet.getOptions(),
         };
       },
     );
@@ -221,7 +279,7 @@ export class Xldx {
   static async read(data: Uint8Array | Buffer): Promise<WorkbookData> {
     const uint8Array = data instanceof Buffer ? new Uint8Array(data) : data;
     const reader = new XlsxReader(uint8Array);
-    return reader.read();
+    return reader.readAsync();
   }
 
   static readWithStyles(data: Uint8Array | Buffer): WorkbookDataWithStyles {
@@ -243,7 +301,30 @@ export class Xldx {
 
     if (json.sheets) {
       json.sheets.forEach((sheet) => {
-        xldx.writer.addWorksheet(sheet.name, sheet.data, sheet.columnWidths);
+        const columns =
+          sheet.columns ||
+          (sheet.data[0] || []).map((header, index) => ({
+            key: String(header ?? `Column${index + 1}`),
+            header: String(header ?? `Column ${index + 1}`),
+            width: sheet.columnWidths?.[index],
+          }));
+        const rows =
+          sheet.rows ||
+          sheet.data.slice(1).map((row) =>
+            columns.reduce(
+              (data, column, index) => ({
+                ...data,
+                [column.key]: row[index] ?? null,
+              }),
+              {} as DataRow,
+            ),
+          );
+        const options = sheet.options || { name: sheet.name };
+
+        xldx.sheets.set(
+          sheet.name,
+          new Sheet(rows, columns, { ...options, name: sheet.name }),
+        );
       });
     }
 
