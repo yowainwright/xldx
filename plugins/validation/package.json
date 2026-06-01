@@ -1,0 +1,37 @@
+{
+  "name": "@xldx/validation",
+  "version": "0.0.1",
+  "description": "Data validation plugin for xldx - add dropdown lists and validation rules to Excel cells",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun build src/index.ts --outfile dist/index.js --target browser && tsc --emitDeclarationOnly --outDir dist",
+    "test": "bun test"
+  },
+  "peerDependencies": {
+    "xldx": ">=0.0.1"
+  },
+  "devDependencies": {
+    "typescript": "^5",
+    "xldx": "*"
+  },
+  "keywords": [
+    "excel",
+    "xlsx",
+    "validation",
+    "dropdown",
+    "xldx",
+    "plugin"
+  ],
+  "license": "O'Sassy"
+}

@@ -19,7 +19,7 @@ describe("Node.js Integration Tests", () => {
       const data = [
         { name: "Alice", age: 30, city: "New York" },
         { name: "Bob", age: 25, city: "Los Angeles" },
-        { name: "Charlie", age: 35, city: "Chicago" }
+        { name: "Charlie", age: 35, city: "Chicago" },
       ];
 
       const xldx = new Xldx(data);
@@ -27,7 +27,7 @@ describe("Node.js Integration Tests", () => {
         { name: "People" },
         { key: "name", header: "Name" },
         { key: "age", header: "Age" },
-        { key: "city", header: "City" }
+        { key: "city", header: "City" },
       );
 
       const filePath = path.join(TEST_OUTPUT_DIR, "simple.xlsx");
@@ -49,16 +49,10 @@ describe("Node.js Integration Tests", () => {
     it("should generate XLSX with multiple sheets", async () => {
       const xldx = new Xldx([{ id: 1 }]);
 
-      xldx.createSheet(
-        { name: "Sheet1" },
-        { key: "id", header: "ID" }
-      );
+      xldx.createSheet({ name: "Sheet1" }, { key: "id", header: "ID" });
 
       const xldx2 = new Xldx([{ value: "test" }]);
-      xldx2.createSheet(
-        { name: "Data" },
-        { key: "value", header: "Value" }
-      );
+      xldx2.createSheet({ name: "Data" }, { key: "value", header: "Value" });
 
       const filePath1 = path.join(TEST_OUTPUT_DIR, "multi1.xlsx");
       const filePath2 = path.join(TEST_OUTPUT_DIR, "multi2.xlsx");
@@ -78,7 +72,7 @@ describe("Node.js Integration Tests", () => {
         { category: "A", value: 100 },
         { category: "B", value: 200 },
         { category: "A", value: 150 },
-        { category: "C", value: 300 }
+        { category: "C", value: 300 },
       ];
 
       const xldx = new Xldx(data);
@@ -87,13 +81,13 @@ describe("Node.js Integration Tests", () => {
         {
           key: "category",
           header: "Category",
-          patterns: { bgColorPattern: "colorPerDiff" }
+          patterns: { bgColorPattern: "colorPerDiff" },
         },
         {
           key: "value",
           header: "Value",
-          patterns: { bgColorPattern: "zebra" }
-        }
+          patterns: { bgColorPattern: "zebra" },
+        },
       );
 
       const filePath = path.join(TEST_OUTPUT_DIR, "patterns.xlsx");
@@ -105,15 +99,18 @@ describe("Node.js Integration Tests", () => {
 
     it("should generate XLSX with auto column widths", async () => {
       const data = [
-        { short: "A", long: "This is a very long text that should affect column width" },
-        { short: "B", long: "Another long text" }
+        {
+          short: "A",
+          long: "This is a very long text that should affect column width",
+        },
+        { short: "B", long: "Another long text" },
       ];
 
       const xldx = new Xldx(data);
       xldx.createSheet(
         { name: "Widths" },
         { key: "short", header: "Short", width: "auto" },
-        { key: "long", header: "Long Column", width: "auto" }
+        { key: "long", header: "Long Column", width: "auto" },
       );
 
       const filePath = path.join(TEST_OUTPUT_DIR, "widths.xlsx");
@@ -128,14 +125,11 @@ describe("Node.js Integration Tests", () => {
         { text: "<xml>content</xml>" },
         { text: "Quotes: \"double\" and 'single'" },
         { text: "Ampersand: A & B" },
-        { text: "Unicode: 日本語 한국어 🎉" }
+        { text: "Unicode: 日本語 한국어 🎉" },
       ];
 
       const xldx = new Xldx(data);
-      xldx.createSheet(
-        { name: "Special" },
-        { key: "text", header: "Text" }
-      );
+      xldx.createSheet({ name: "Special" }, { key: "text", header: "Text" });
 
       const filePath = path.join(TEST_OUTPUT_DIR, "special.xlsx");
       await xldx.write(filePath);
@@ -149,7 +143,7 @@ describe("Node.js Integration Tests", () => {
       const data = [
         { string: "text", number: 123, float: 45.67, bool: true },
         { string: "", number: 0, float: -1.5, bool: false },
-        { string: "null check", number: null, float: undefined, bool: null }
+        { string: "null check", number: null, float: undefined, bool: null },
       ];
 
       const xldx = new Xldx(data);
@@ -158,7 +152,7 @@ describe("Node.js Integration Tests", () => {
         { key: "string", header: "String" },
         { key: "number", header: "Number" },
         { key: "float", header: "Float" },
-        { key: "bool", header: "Boolean" }
+        { key: "bool", header: "Boolean" },
       );
 
       const filePath = path.join(TEST_OUTPUT_DIR, "types.xlsx");
@@ -176,7 +170,7 @@ describe("Node.js Integration Tests", () => {
         id: i + 1,
         name: `User ${i + 1}`,
         email: `user${i + 1}@example.com`,
-        score: Math.random() * 100
+        score: Math.random() * 100,
       }));
 
       const xldx = new Xldx(data);
@@ -185,7 +179,7 @@ describe("Node.js Integration Tests", () => {
         { key: "id", header: "ID" },
         { key: "name", header: "Name" },
         { key: "email", header: "Email" },
-        { key: "score", header: "Score" }
+        { key: "score", header: "Score" },
       );
 
       const filePath = path.join(TEST_OUTPUT_DIR, "large.xlsx");
@@ -227,7 +221,6 @@ describe("Node.js Integration Tests", () => {
     });
   });
 
-
   describe("SheetsData format", () => {
     it("should generate XLSX from column-based data", async () => {
       const sheetsData = {
@@ -236,10 +229,10 @@ describe("Node.js Integration Tests", () => {
             name: "ColumnData",
             data: {
               name: ["Alice", "Bob", "Charlie"],
-              score: [95, 87, 92]
-            }
-          }
-        ]
+              score: [95, 87, 92],
+            },
+          },
+        ],
       };
 
       const xldx = new Xldx(sheetsData);
@@ -257,7 +250,7 @@ describe("Node.js Integration Tests", () => {
       const originalData = [
         { id: 1, name: "Test 1", active: true, score: 95.5 },
         { id: 2, name: "Test 2", active: false, score: 87.3 },
-        { id: 3, name: "Test 3", active: true, score: 92.1 }
+        { id: 3, name: "Test 3", active: true, score: 92.1 },
       ];
 
       const xldx = new Xldx(originalData);
@@ -266,7 +259,7 @@ describe("Node.js Integration Tests", () => {
         { key: "id", header: "ID" },
         { key: "name", header: "Name" },
         { key: "active", header: "Active" },
-        { key: "score", header: "Score" }
+        { key: "score", header: "Score" },
       );
 
       const filePath = path.join(TEST_OUTPUT_DIR, "roundtrip.xlsx");
@@ -275,7 +268,12 @@ describe("Node.js Integration Tests", () => {
       const fileData = await fs.readFile(filePath);
       const result = await Xldx.read(fileData);
 
-      expect(result.sheets[0].data[0]).toEqual(["ID", "Name", "Active", "Score"]);
+      expect(result.sheets[0].data[0]).toEqual([
+        "ID",
+        "Name",
+        "Active",
+        "Score",
+      ]);
       expect(result.sheets[0].data[1]).toEqual([1, "Test 1", true, 95.5]);
       expect(result.sheets[0].data[2]).toEqual([2, "Test 2", false, 87.3]);
       expect(result.sheets[0].data[3]).toEqual([3, "Test 3", true, 92.1]);

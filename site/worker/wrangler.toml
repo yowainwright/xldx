@@ -1,0 +1,9 @@
+name = "xldx-api"
+main = "index.ts"
+compatibility_date = "2024-01-01"
+
+[vars]
+# Set these in Cloudflare dashboard or use wrangler secret
+# GITHUB_CLIENT_ID = ""
+# GITHUB_CLIENT_SECRET = ""
+# JWT_SECRET = ""

@@ -1,0 +1,38 @@
+{
+  "name": "@xldx/conditional-formatting",
+  "version": "0.0.1",
+  "description": "Conditional formatting plugin for xldx - add color scales, data bars, and icon sets to Excel cells",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "bun build src/index.ts --outfile dist/index.js --target browser && tsc --emitDeclarationOnly --outDir dist",
+    "test": "bun test"
+  },
+  "peerDependencies": {
+    "xldx": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5"
+  },
+  "keywords": [
+    "excel",
+    "xlsx",
+    "conditional-formatting",
+    "color-scale",
+    "data-bar",
+    "icon-set",
+    "xldx",
+    "plugin"
+  ],
+  "license": "O'Sassy"
+}
