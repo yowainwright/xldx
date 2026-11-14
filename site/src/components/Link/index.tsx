@@ -11,7 +11,7 @@ export function Link({ href, title, children }: LinkProps) {
         title={title}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300"
+        className="text-primary underline-offset-4 hover:underline"
       >
         {children}
       </a>
@@ -19,11 +19,7 @@ export function Link({ href, title, children }: LinkProps) {
   }
 
   return (
-    <NextLink
-      href={href}
-      title={title}
-      className="text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300"
-    >
+    <NextLink href={href} title={title} className="text-primary underline-offset-4 hover:underline">
       {children}
     </NextLink>
   );

@@ -1,0 +1,6 @@
+[tools]
+bun = "1.4.4"
+node = "24.15.0"
+"github:yowainwright/fs-lint" = { version = "0.4.0", rename_exe = "fs-lint" }
+"github:yowainwright/src-lint" = { version = "0.2.0", rename_exe = "src-lint" }
+"github:yowainwright/struct-lint" = "0.1.0"

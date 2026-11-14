@@ -17,7 +17,7 @@ bun add xldx
 - Multi-sheet support
 - Full type safety
 - Works in browsers and node, bun, or deno
-- < 17KB minified
+- Native arithmetic, references, ranges, and SUM
 
 ## Quick Start
 
@@ -110,6 +110,8 @@ new Xldx(data: DataRow[] | SheetsData, options?: XldxOptions)
 
 ### Methods
 
+<!-- public Xldx methods and Workbook types from src/index.ts and src/types.ts -->
+
 - `setTheme(theme: ColorTheme): this` - Set the color theme
 - `createSheet(options: SheetOptions, ...columns: ColumnDefinition[]): this` - Create a new worksheet
 - `createSheets(sheets: Array<{options: SheetOptions; columns: ColumnDefinition[]}>): this` - Create multiple worksheets
@@ -118,29 +120,146 @@ new Xldx(data: DataRow[] | SheetsData, options?: XldxOptions)
 - `toBlob(): Promise<Blob>` - Generate Excel file as Blob (Browser)
 - `download(filename?: string): Promise<void>` - Trigger file download (Browser only)
 - `write(filePath: string): Promise<void>` - Write Excel file to disk (node, bun, or deno only)
-- `toJSON(): any` - Export workbook structure as JSON
-- `static fromJSON(json: any): Xldx` - Create from JSON structure
-- `static read(data: Uint8Array | Buffer): Promise<any>` - Read XLSX file
+- `toJSON(): Workbook` - Export workbook structure as JSON
+- `calculate(): Calculation` - Return a fresh calculated workbook and cell diagnostics
+- `static fromJSON(json: Partial<Workbook>): Xldx` - Create from JSON structure
+- `static read(data: Uint8Array): Promise<Workbook>` - Read XLSX file (Buffers are Uint8Arrays)
+
+Exports use the current sheet data, including edits made after an earlier export.
+`fromJSON` restores sheets for both editing and export. Restored columns use
+zero-based string keys (`"0"`, `"1"`, …), preserving duplicate or non-string
+headers without treating them as object keys.
+
+The package selects browser or Node methods and declarations through conditional
+exports. Use `xldx/browser` or `xldx/server` when selecting an environment explicitly.
+NodeNext TypeScript consumers can use the root `xldx` import.
+
+### Formulas
+
+<!-- formula factories from src/formula/index.ts and calculation from src/index.ts -->
+
+```typescript
+import { Formula, Xldx } from 'xldx';
+
+const data = [[2, Formula.multiply(Formula.ref('A1'), 2)]];
+const book = Xldx.fromJSON({ sheets: [{ name: 'Data', data }] });
+book.getSheetData('Data').updateCellData('A1', 3);
+const { workbook, issues } = book.calculate(); // B1 result: 6
+```
+
+Factories: `parse`, `ref`, `range`, `sum`, `add`, `subtract`, `multiply`, and `divide`.
+Use `Formula.sum(Formula.range('A1', 'A5'))`; string arguments are literal text.
+Formula JSON is `{ formula: 'A1*2', result: 6 }`; `result` is optional, and stored text has no leading `=`.
+`result` accepts finite numbers, strings, booleans, or `{ error: '#DIV/0!' }` and
+the other classic Excel error codes. Formula-shaped objects are reserved and validated.
+
+`toJSON()` retains source values and caches; `calculate()` returns fresh results
+without mutating them. XLSX export recalculates and writes formulas with available
+caches. Unsupported expressions retain their source, omit stale caches, and produce
+diagnostics. Ordinary strings beginning with `=` remain literal.
+
+Supported syntax is `+ - * /`, unary signs, parentheses, numbers, quoted strings,
+booleans, same-sheet A1 references with optional `$`, and rectangular ranges inside
+SUM. Other functions, cross-sheet references, arrays, and locale conversions are
+unsupported. Cycles report `#REF!` with a cycle diagnostic. Calculation limits are
+8,192 characters per expression, 128 nesting levels, and 100,000 cell visits per
+worksheet pass. Addressed edits include the header at A1; existing body row index
+zero remains A2. The homepage supports selection, formula-bar edits, and direct
+editing by double-click or Enter/F2.
+
+XLSX imports currently support uncompressed ZIP entries and normal single-cell
+formulas. Compressed entries and shared/array/data-table formulas fail explicitly.
+The independent Excel fixture and its provenance are in `fixtures/formula/`.
 
 ## Development
 
+<!-- development commands matching package.json scripts and mise.toml -->
+
+Tool versions are pinned in `mise.toml` for local development and CI, including
+Bun 1.4.4, Node.js, and the native linters. Source, tests, scripts, and
+Oxlint/Oxfmt configurations are TypeScript. Native linters use their supported
+configuration formats: `.fs-lintrc`, `.src-lintrc`, `.legibilityrc`, and
+`mise.toml` for tool installation.
+
+<!-- workspace task orchestration from turbo.json and both package.json files -->
+Workspace build, test, typecheck, lint, format, and development commands run
+through Turbo. The library build produces `dist/` before the site builds its
+Next.js output and static export. Build and check results are cached; lint and
+format always run. Root tests wait for the library build, lint, and typecheck
+because the lint-policy tests temporarily create invalid source files.
+
 ```bash
+# Install the pinned toolchain
+mise install
+
 # Install dependencies
 bun install
 
 # Run tests
-bun test
+bun run test
+bun run test:unit
+bun run test:integration
+bun run test:e2e
 
-# Build
+# Build the library and site
 bun run build
 
 # Lint
 bun run lint
 
+# Format
+bun run format
+bun run format:check
+
 # Type check
 bun run typecheck
+
+# Dependency checks and updates
+bun run deps:check
+bun run deps:security
+bun run deps:overrides
+bun run update
 ```
+
+<!-- deployment behavior from .github/workflows/gh-pages.yml -->
+GitHub Pages deployment is manual. Run **Deploy to GitHub Pages** from Actions
+and answer **Deploy to Pages?**: **Yes** builds and deploys; **No** builds and
+skips deployment without failing the workflow. Build and deployment errors
+still fail normally. Pushes to `main` do not deploy automatically.
+
+<!-- source and test path policies from .fs-lintrc; checks from .legibilityrc and package.json scripts -->
+
+The root library and `site/` are separate projects. Turbo runs their tests and
+typechecks as separate tasks. Root lint covers `src/`, `tests/`, scripts, and
+TypeScript tool configs; it does not check `site/`.
+
+- Source files: `src/**/{index,utils,types,constants}.ts`.
+- Test files: `tests/{unit,integration,e2e}/*/{index,utils}.test.ts`.
+- Root-module tests live in `tests/unit/root/`. Browser mocks live in
+  `tests/integration/browser/utils.test.ts`.
+
+`bun run lint` feeds every source and test file, including untracked files, to
+fs-lint through Legibility. It also runs strict import checks, declaration-order
+checks, Oxlint with the agentStrict Legibility preset and a 20-line function
+limit, and Oxfmt. Violations fail the command. `bun run lint:fs`,
+`bun run lint:imports`, `bun run lint:structure`, and `bun run lint:code` run
+individual checks. `bun run lint/session` checks changed files and rejects added
+comments during agent sessions.
+
+Source lint also rejects explicit `any`, type assertions, and non-null assertions.
+
+`tsconfig.json` checks the library, tests, scripts, and TypeScript tool configs
+without emitting files. `bun run build:types` uses CLI options and the three
+library entry points to emit declarations into `dist`. ZIP compatibility tests
+also check the original record bytes.
+
+<!-- dependency policy from package.json#codependence and package.json#pastoralist -->
+
+Codependence updates both workspace manifests. The local `xldx` link and the
+site's `@tanstack/db` and `idb-keyval` version requirements are held back.
+The temporary `basic-ftp` security override is tracked by Pastoralist with its
+reason and parent dependency.
 
 ## License
 
-MIT
+Elastic License 2.0

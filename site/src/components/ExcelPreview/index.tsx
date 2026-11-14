@@ -13,13 +13,8 @@ export function ExcelPreview({
   onColumnsChange,
   editable = true,
 }: ExcelPreviewProps) {
-  const {
-    handleCellChange,
-    handleHeaderChange,
-    handleAddRow,
-    handleAddColumn,
-    addRowColSpan,
-  } = useExcelPreview({ data, columns, onDataChange, onColumnsChange });
+  const { handleCellChange, handleHeaderChange, handleAddRow, handleAddColumn, addRowColSpan } =
+    useExcelPreview({ data, columns, onDataChange, onColumnsChange });
 
   return (
     <div className="rounded-lg border border-border bg-card">

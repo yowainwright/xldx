@@ -20,7 +20,7 @@ export function QueryProvider({ children }: QueryProviderProps) {
             gcTime: CACHE_TIME_MS,
           },
         },
-      })
+      }),
   );
 
   useEffect(() => {

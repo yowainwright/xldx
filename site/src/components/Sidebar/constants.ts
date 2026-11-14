@@ -9,30 +9,4 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
       { label: "Quick Start", href: "/docs/quick-start" },
     ],
   },
-  {
-    title: "Core Concepts",
-    items: [
-      { label: "Creating Sheets", href: "/docs/creating-sheets" },
-      { label: "Column Definitions", href: "/docs/columns" },
-      { label: "Styling", href: "/docs/styling" },
-      { label: "Patterns", href: "/docs/patterns" },
-    ],
-  },
-  {
-    title: "API Reference",
-    items: [
-      { label: "Xldx Class", href: "/docs/api/xldx" },
-      { label: "Sheet Methods", href: "/docs/api/sheet" },
-      { label: "Types", href: "/docs/api/types" },
-    ],
-  },
-  {
-    title: "Examples",
-    items: [
-      { label: "Basic Usage", href: "/docs/examples/basic" },
-      { label: "Styling Examples", href: "/docs/examples/styling" },
-      { label: "Browser Download", href: "/docs/examples/browser" },
-      { label: "Node.js Export", href: "/docs/examples/node" },
-    ],
-  },
 ];

@@ -2,17 +2,54 @@
   "name": "xldx",
   "version": "0.0.1",
   "description": "A powerful Excel file builder for TypeScript/JavaScript with advanced styling and theming capabilities",
-  "workspaces": ["site"],
+  "keywords": [
+    "data-export",
+    "data-visualization",
+    "excel",
+    "exceljs",
+    "javascript",
+    "reports",
+    "spreadsheet",
+    "styling",
+    "table",
+    "theming",
+    "typescript",
+    "workbook",
+    "worksheet",
+    "xlsx"
+  ],
+  "homepage": "https://github.com/yowainwright/xldx",
+  "bugs": {
+    "url": "https://github.com/yowainwright/xldx/issues"
+  },
+  "license": "Elastic-2.0",
+  "author": "Jeff Wainwright <https:jeffry.in> (yowainwright@gmail.com)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yowainwright/xldx.git"
+  },
+  "workspaces": [
+    "site"
+  ],
+  "files": [
+    "dist"
+  ],
+  "type": "module",
   "main": "dist/server/index.js",
   "module": "dist/browser/index.js",
   "browser": "dist/browser/index.js",
-  "type": "module",
-  "types": "dist/index.d.ts",
+  "types": "dist/server/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "browser": "./dist/browser/index.js",
-      "node": "./dist/server/index.js",
+      "browser": {
+        "types": "./dist/browser/index.d.ts",
+        "default": "./dist/browser/index.js"
+      },
+      "node": {
+        "types": "./dist/server/index.d.ts",
+        "default": "./dist/server/index.js"
+      },
+      "types": "./dist/browser/index.d.ts",
       "default": "./dist/browser/index.js"
     },
     "./browser": {
@@ -24,78 +61,92 @@
       "import": "./dist/server/index.js"
     }
   },
-  "files": [
-    "dist"
-  ],
   "scripts": {
-    "build": "turbo run build:pkg",
+    "build": "turbo run build:pkg build",
     "build:pkg": "bun run clean && bun run build:browser && bun run build:node && bun run build:types",
     "build:browser": "bun build src/browser/index.ts --outfile dist/browser/index.js --target browser --minify",
     "build:node": "bun build src/server/index.ts --outfile dist/server/index.js --target node --minify --external fs --external fs/promises --external buffer",
-    "build:types": "tsc --emitDeclarationOnly --outDir dist",
-    "clean": "rm -rf dist",
-    "dev": "bun run --cwd site dev",
+    "build:types": "tsc --ignoreConfig --strict --noImplicitReturns --noUnusedLocals --noUnusedParameters --skipLibCheck --target esnext --module esnext --moduleResolution bundler --types bun-types --declaration --emitDeclarationOnly --rootDir src --outDir dist src/index.ts src/browser/index.ts src/server/index.ts",
+    "clean": "bun scripts/clean/index.ts",
+    "dev": "turbo run dev --filter=site",
     "lint": "turbo run lint:run",
-    "lint:run": "oxlint src test",
-    "lint:fix": "oxlint src test --fix",
+    "lint:run": "bun scripts/lint/index.ts && src-lint check tests --strict && src-lint check scripts --strict && bun run format:check",
+    "lint:fs": "bun scripts/lint/index.ts --linter fs-lint",
+    "lint:imports": "legibility --config .legibilityrc --linter src-lint && src-lint check tests --strict && src-lint check scripts --strict",
+    "lint:structure": "legibility --config .legibilityrc --linter struct-lint",
+    "lint:code": "legibility --config .legibilityrc --linter oxlint-plugin-legibility",
+    "lint/session": "lint-changed --comments=forbid",
+    "lint:fix": "oxlint --config oxlint.config.ts --deny-warnings src tests scripts oxlint.config.ts oxfmt.config.ts --fix",
     "format": "turbo run format:run",
-    "format:run": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
-    "prepublishOnly": "bun run test && bun run build",
-    "preview": "bun run --cwd site preview",
+    "format:run": "oxfmt --config oxfmt.config.ts --write src tests scripts oxlint.config.ts oxfmt.config.ts package.json tsconfig.json turbo.json .fs-lintrc .legibilityrc .src-lintrc",
+    "format:check": "oxfmt --config oxfmt.config.ts --check src tests scripts oxlint.config.ts oxfmt.config.ts package.json tsconfig.json turbo.json .fs-lintrc .legibilityrc .src-lintrc",
+    "prepublishOnly": "bun run test && turbo run build:pkg",
     "release": "release-it",
     "test": "turbo run test:run",
-    "test:run": "bun test test --timeout 5000",
-    "test:all": "bun test test --timeout 5000",
-    "test:unit": "turbo run test:unit",
-    "test:unit:run": "bun test test --timeout 5000",
-    "test:integration": "turbo run test:integration",
-    "test:integration:run": "bun test test --timeout 5000",
-    "test:watch": "bun test --watch test",
+    "test:run": "bun test ./tests --timeout 5000",
+    "test:all": "turbo run test:run",
+    "test:unit": "turbo run test:unit:run",
+    "test:unit:run": "bun test ./tests/unit --timeout 5000",
+    "test:integration": "turbo run test:integration:run",
+    "test:integration:run": "bun test ./tests/integration --timeout 5000",
+    "test:e2e": "turbo run test:e2e:run",
+    "test:e2e:run": "bun test ./tests/e2e --timeout 5000",
+    "test:watch": "bun test --watch tests",
     "typecheck": "turbo run typecheck:run",
     "typecheck:run": "tsc --noEmit",
+    "deps:check": "codependence --noCache",
+    "deps:security": "pastoralist --dry-run --checkSecurity --hasWorkspaceSecurityChecks --strict --quiet --no-cache",
+    "deps:overrides": "pastoralist doctor --outputFormat json",
     "update": "codependence --update && bun install"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/yowainwright/xldx.git"
-  },
-  "keywords": [
-    "excel",
-    "xlsx",
-    "spreadsheet",
-    "exceljs",
-    "typescript",
-    "javascript",
-    "reports",
-    "data-export",
-    "styling",
-    "theming",
-    "workbook",
-    "worksheet",
-    "table",
-    "data-visualization"
-  ],
-  "author": "Jeff Wainwright <https:jeffry.in> (yowainwright@gmail.com)",
-  "license": "Elastic-2.0",
-  "bugs": {
-    "url": "https://github.com/yowainwright/xldx/issues"
-  },
-  "homepage": "https://github.com/yowainwright/xldx",
+  "dependencies": {},
   "devDependencies": {
-    "@types/bun": "latest",
-    "codependence": "^1.0.0-1",
-    "oxlint": "^1.12.0",
-    "pastoralist": "latest",
-    "prettier": "3.6.2",
-    "release-it": "19.0.4",
-    "turbo": "2.5.5",
-    "typescript": "5.8.3"
+    "@types/bun": "1.4.4",
+    "codependence": "^1.0.16",
+    "legibility": "0.0.1",
+    "oxfmt": "0.78.0",
+    "oxlint": "1.93.0",
+    "oxlint-plugin-legibility": "0.0.5",
+    "pastoralist": "1.14.2",
+    "release-it": "21.1.2",
+    "turbo": "2.11.11",
+    "typescript": "7.0.2"
+  },
+  "peerDependencies": {},
+  "optionalDependencies": {},
+  "overrides": {
+    "basic-ftp": "6.2.6"
+  },
+  "packageManager": "bun@1.4.4",
+  "codependence": {
+    "files": [
+      "package.json",
+      "site/package.json"
+    ],
+    "mode": "precise",
+    "codependencies": [
+      "xldx",
+      "@tanstack/db",
+      "idb-keyval"
+    ]
+  },
+  "pastoralist": {
+    "appendix": {
+      "basic-ftp@6.2.6": {
+        "dependents": {
+          "xldx": "basic-ftp (required by release-it)"
+        },
+        "ledger": {
+          "addedDate": "2026-11-13T19:20:12.407Z",
+          "reason": "get-uri 8.0.1 requires the vulnerable basic-ftp 5.x line. Use patched 6.2.6 for CVE-2026-102990, CVE-2026-126345, and CVE-2026-126346; the Client API used by get-uri was checked. Remove when the parent accepts a patched version.",
+          "source": "security"
+        }
+      }
+    }
   },
   "release-it": {
     "git": {
       "commitMessage": "chore: release"
     }
-  },
-  "packageManager": "bun@1.1.38"
+  }
 }

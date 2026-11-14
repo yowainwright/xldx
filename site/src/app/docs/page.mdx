@@ -1,8 +1,3 @@
----
-title: Introduction
-description: Get started with xldx, the zero-dependency XLSX generator
----
-
 # Introduction
 
 xldx is a lightweight, type-safe library for creating Excel (XLSX) files in the browser and Node.js. It has zero external dependencies and provides a simple, intuitive API for generating spreadsheets.
@@ -32,7 +27,7 @@ xldx.createSheet(
   { name: "People" },
   { key: "name", header: "Name" },
   { key: "age", header: "Age" },
-  { key: "city", header: "City" }
+  { key: "city", header: "City" },
 );
 
 // Browser
@@ -46,4 +41,4 @@ await xldx.write("people.xlsx");
 
 - [Installation](/docs/installation) - Install xldx in your project
 - [Quick Start](/docs/quick-start) - Build your first spreadsheet
-- [API Reference](/docs/api/xldx) - Explore the full API
+- [API Reference](https://github.com/yowainwright/xldx#api) - Explore the full API

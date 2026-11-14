@@ -1,24 +1,27 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+The xldx site uses Next.js and shadcn/ui with its neutral theme.
+
+<!-- homepage behavior from src/components/Spreadsheet -->
+The homepage renders colored cells spelling `xldx`. Enter `=XLDX("#10b981")`
+in the formula bar to change the fill color. Each letter uses a 10 × 14 cell
+area, with two columns between letters. Documentation uses shadcn's Sidebar.
 
 ## Getting Started
 
-First, run the development server:
+<!-- development commands from ../mise.toml and package.json -->
+From the workspace root:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+mise install
+mise exec -- bun install
+mise exec -- bun run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:4747](http://localhost:4747). Production builds use
+the `/xldx` base path for GitHub Pages.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Run `mise exec -- bun run --cwd site test` and `mise exec -- bun run --cwd site typecheck` for site checks.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+This project uses `next/font` to load Inter.
 
 ## Learn More
 

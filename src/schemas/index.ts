@@ -1,0 +1,15 @@
+export type {
+  FontStyle,
+  FillStyle,
+  BorderStyle,
+  BordersStyle,
+  AlignmentStyle,
+  CellStyle,
+  PatternContext,
+  PatternFunction,
+  ColumnPattern,
+  RowStyleOverride,
+  ColumnDefinition,
+  SheetOptions,
+  XldxOptions,
+} from "./types.js";

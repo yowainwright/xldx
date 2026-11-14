@@ -1,0 +1,23 @@
+{
+  "languages": ["typescript"],
+  "linters": {
+    "fs-lint": { "args": ["check", "--stdin0"] },
+    "src-lint": { "args": ["check", "src", "--strict"] },
+    "struct-lint": {
+      "args": ["--profile", "ci", "src", "tests", "scripts", "oxlint.config.ts", "oxfmt.config.ts"]
+    },
+    "oxlint-plugin-legibility": {
+      "args": [
+        "--config",
+        "oxlint.config.ts",
+        "--deny-warnings",
+        "src",
+        "tests",
+        "scripts",
+        "oxlint.config.ts",
+        "oxfmt.config.ts"
+      ]
+    }
+  },
+  "updates": { "enabled": false }
+}

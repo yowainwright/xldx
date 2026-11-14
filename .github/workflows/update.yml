@@ -12,25 +12,19 @@ jobs:
   udpate-deps:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [24.x]
-
     steps:
       - uses: actions/checkout@v4
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
+      - name: Install toolchain
+        uses: jdx/mise-action@v5
 
-      - uses: oven-sh/setup-bun@v2
-        name: Install Bun
-
-      - run: bun install
-      - run: bun run build
-      - run: bun run test
+      - run: bun install --frozen-lockfile
       - run: bun run update
-      - run: bun install
+      - run: bun run format
+      - run: bun run build
+      - run: bun run lint
+      - run: bun run typecheck
+      - run: bun run test
+      - run: bun run deps:security
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7
         with:

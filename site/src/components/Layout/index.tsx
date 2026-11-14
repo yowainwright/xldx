@@ -1,40 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Header } from "../Header";
 import { Sidebar } from "../Sidebar";
 import { Footer } from "../Footer";
 import type { DocsLayoutProps } from "./types";
 
-export function DocsLayout({ children, frontmatter }: DocsLayoutProps) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
+export function DocsLayout({ children }: DocsLayoutProps) {
   return (
-    <div className="min-h-screen bg-white dark:bg-zinc-950">
-      <Header onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
-      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-
-      <main className="lg:pl-64">
-        <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
-          {frontmatter?.title && (
-            <header className="mb-8">
-              <h1 className="text-3xl font-bold text-zinc-900 dark:text-white">
-                {frontmatter.title}
-              </h1>
-              {frontmatter.description && (
-                <p className="mt-2 text-lg text-zinc-600 dark:text-zinc-400">
-                  {frontmatter.description}
-                </p>
-              )}
-            </header>
-          )}
-          <div className="prose prose-zinc dark:prose-invert max-w-none">
-            {children}
-          </div>
+    <SidebarProvider>
+      <Sidebar />
+      <SidebarInset>
+        <Header>
+          <SidebarTrigger />
+        </Header>
+        <div className="mx-auto w-full max-w-3xl flex-1 px-4 py-12 sm:px-6 lg:px-8">
+          <article className="docs-content">{children}</article>
         </div>
         <Footer />
-      </main>
-    </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
 

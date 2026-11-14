@@ -1,78 +1,15 @@
-import { ArrowRight, Download, FileSpreadsheet, Zap, Package } from "lucide-react";
-import { Header, Footer, Hero, Features, CodeExample } from "@/components";
-import type { Feature } from "@/components/Features/types";
-
-const FEATURES: Feature[] = [
-  {
-    icon: <Package className="h-6 w-6" />,
-    title: "Zero Dependencies",
-    description: "No external libraries. Just import and use.",
-  },
-  {
-    icon: <Zap className="h-6 w-6" />,
-    title: "Lightweight",
-    description: "Minimal bundle size for fast loading.",
-  },
-  {
-    icon: <FileSpreadsheet className="h-6 w-6" />,
-    title: "Full XLSX Support",
-    description: "Styling, multiple sheets, and patterns.",
-  },
-  {
-    icon: <Download className="h-6 w-6" />,
-    title: "Universal",
-    description: "Works in browser and Node.js.",
-  },
-];
-
-const EXAMPLE_CODE = `import { Xldx } from "xldx";
-
-const data = [
-  { name: "Alice", age: 30, city: "New York" },
-  { name: "Bob", age: 25, city: "Los Angeles" },
-];
-
-const xldx = new Xldx(data);
-
-xldx.createSheet(
-  { name: "People" },
-  { key: "name", header: "Name" },
-  { key: "age", header: "Age" },
-  { key: "city", header: "City" }
-);
-
-await xldx.download("people.xlsx");`;
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { Spreadsheet } from "@/components/Spreadsheet";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="flex min-h-screen flex-col bg-background">
       <Header />
 
-      <main>
-        <Hero
-          title="Generate Excel files with"
-          highlight="zero dependencies"
-          description="xldx is a lightweight, type-safe library for creating XLSX files in the browser and Node.js. No external dependencies, just pure JavaScript."
-          primaryCta={{
-            label: "Get Started",
-            href: "/docs",
-            icon: <ArrowRight className="h-4 w-4" />,
-          }}
-          secondaryCta={{
-            label: "Try Playground",
-            href: "/playground",
-          }}
-          installCommand="npm install xldx"
-        />
-
-        <Features title="Why xldx?" features={FEATURES} />
-
-        <CodeExample
-          title="Simple to Use"
-          description="Create Excel files in just a few lines of code."
-          code={EXAMPLE_CODE}
-          filename="example.ts"
-        />
+      <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col justify-center gap-4 px-4 py-8 sm:px-6 lg:px-8">
+        <h1 className="sr-only">xldx spreadsheet</h1>
+        <Spreadsheet />
       </main>
 
       <Footer />

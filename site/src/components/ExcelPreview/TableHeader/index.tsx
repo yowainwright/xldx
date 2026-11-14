@@ -11,7 +11,7 @@ function getColumnLetter(index: number): string {
 
 function createHeaderChangeHandler(
   colIndex: number,
-  onHeaderChange?: (index: number, value: string) => void
+  onHeaderChange?: (index: number, value: string) => void,
 ) {
   return (value: string) => onHeaderChange?.(colIndex, value);
 }

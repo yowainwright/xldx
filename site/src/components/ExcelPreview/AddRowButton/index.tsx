@@ -5,10 +5,7 @@ export function AddRowButton({ colSpan, onClick }: AddRowButtonProps) {
   return (
     <TableRow>
       <TableCell colSpan={colSpan} className="bg-muted/50">
-        <button
-          onClick={onClick}
-          className="text-xs text-muted-foreground hover:text-foreground"
-        >
+        <button onClick={onClick} className="text-xs text-muted-foreground hover:text-foreground">
           + Add row
         </button>
       </TableCell>

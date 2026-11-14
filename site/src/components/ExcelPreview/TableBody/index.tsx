@@ -5,7 +5,7 @@ import type { TableBodyProps } from "./types";
 
 function createCellChangeHandler(
   rowIndex: number,
-  onCellChange: (rowIndex: number, colKey: string, value: string) => void
+  onCellChange: (rowIndex: number, colKey: string, value: string) => void,
 ) {
   return (colKey: string, value: string) => onCellChange(rowIndex, colKey, value);
 }

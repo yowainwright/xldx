@@ -1,23 +1,24 @@
-import { Xldx } from "../index";
+import { Xldx } from "../index.js";
 
-declare module "../index" {
+declare module "../index.js" {
   interface Xldx {
     toBlob(): Promise<Blob>;
     download(filename?: string): Promise<void>;
   }
 }
 
-Xldx.prototype.toBlob = async function(): Promise<Blob> {
+Xldx.prototype.toBlob = async function (): Promise<Blob> {
   const uint8Array = await this.toUint8Array();
-  return new Blob([uint8Array], { 
-    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
+  const blob = new Blob([uint8Array], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   });
+  return blob;
 };
 
-Xldx.prototype.download = async function(filename: string = 'download.xlsx'): Promise<void> {
+Xldx.prototype.download = async function (filename: string = "download.xlsx"): Promise<void> {
   const blob = await this.toBlob();
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const a = document.createElement("a");
   a.href = url;
   a.download = filename;
   document.body.appendChild(a);
@@ -26,4 +27,4 @@ Xldx.prototype.download = async function(filename: string = 'download.xlsx'): Pr
   URL.revokeObjectURL(url);
 };
 
-export * from "../index";
+export * from "../index.js";

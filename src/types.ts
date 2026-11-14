@@ -1,3 +1,10 @@
+import type { CellStyle, ColumnDefinition } from "./schemas/index.js";
+import type { Worksheet } from "./xlsx/types.js";
+
+export interface Workbook {
+  sheets: Worksheet[];
+}
+
 export type WidthCalculationMethod = "max" | "avg" | "median";
 
 export interface WidthCalculationOptions {
@@ -36,9 +43,6 @@ export interface SheetsData {
   [key: string]: unknown;
 }
 
-
-import type { CellStyle, ColumnDefinition } from "./schemas";
-
 export interface SheetDataAPI {
   getRowsData: () => DataRow[];
   getColumnData: () => ColumnData;
@@ -48,6 +52,7 @@ export interface SheetDataAPI {
   updateColumnStyles?: (columnKey: string, styles: CellStyle) => void;
   updateRowData: (rowIndex: number, data: DataRow) => void;
   updateColumnData: (columnKey: string, data: unknown[]) => void;
+  updateCellData: (address: string, value: unknown) => void;
 }
 
 export interface CellProcessingParams {
@@ -56,13 +61,20 @@ export interface CellProcessingParams {
   column: ColumnDefinition;
   columnIndex: number;
   allData: DataRow[];
-  defaultStyle?: CellStyle;
 }
 
-export interface WorksheetView {
-  state?: "frozen";
-  xSplit?: number;
-  ySplit?: number;
-  showGridLines?: boolean;
-  showRowColHeaders?: boolean;
+export interface PatternContextParams {
+  rowIndex: number;
+  colIndex: number;
+  rowData: DataRow;
+  columnKey: string;
+  value: unknown;
+  previousRowData?: DataRow;
+  allData: DataRow[];
+}
+
+export interface CellStyleParams {
+  column: ColumnDefinition;
+  rowIndex: number;
+  defaultStyle?: CellStyle;
 }

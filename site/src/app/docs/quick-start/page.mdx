@@ -1,8 +1,3 @@
----
-title: Quick Start
-description: Build your first spreadsheet with xldx
----
-
 # Quick Start
 
 This guide will walk you through creating your first Excel file with xldx.
@@ -27,7 +22,7 @@ xldx.createSheet(
   { name: "Employees" },
   { key: "name", header: "Employee Name" },
   { key: "department", header: "Department" },
-  { key: "salary", header: "Salary" }
+  { key: "salary", header: "Salary" },
 );
 
 // Download the file (browser)
@@ -43,7 +38,7 @@ xldx.createSheet(
   { name: "Employees" },
   { key: "name", header: "Employee Name", width: 200 },
   { key: "department", header: "Department", width: "auto" },
-  { key: "salary", header: "Salary", width: 100 }
+  { key: "salary", header: "Salary", width: 100 },
 );
 ```
 
@@ -58,7 +53,7 @@ const xldx = new Xldx(employeeData);
 xldx.createSheet(
   { name: "Employees" },
   { key: "name", header: "Name" },
-  { key: "department", header: "Department" }
+  { key: "department", header: "Department" },
 );
 
 // Second sheet with different data
@@ -66,7 +61,7 @@ const xldx2 = new Xldx(departmentData);
 xldx2.createSheet(
   { name: "Departments" },
   { key: "name", header: "Department Name" },
-  { key: "budget", header: "Budget" }
+  { key: "budget", header: "Budget" },
 );
 ```
 
@@ -85,6 +80,5 @@ console.log(result.sheets);
 
 ## Next Steps
 
-- [Creating Sheets](/docs/creating-sheets) - Learn more about sheet options
-- [Column Definitions](/docs/columns) - Configure columns in detail
-- [Styling](/docs/styling) - Add styles to your spreadsheet
+- [API Reference](https://github.com/yowainwright/xldx#api) - Sheet and column options
+- [Advanced Usage](https://github.com/yowainwright/xldx#advanced-usage) - Themes and patterns
