@@ -1,4 +1,4 @@
-import type { FormulaValue, FormulaResult } from "../formula/types.js";
+import type { FormulaValue, FormulaResult, SpillRange } from "../formula/types.js";
 
 export type CellValue =
   | string
@@ -14,6 +14,7 @@ export interface Worksheet {
   name: string;
   data: unknown[][];
   columnWidths?: number[];
+  spills?: SpillRange[];
 }
 
 export interface EncodedCell {

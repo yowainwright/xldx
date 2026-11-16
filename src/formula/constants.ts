@@ -8,6 +8,8 @@ export const ERRORS: readonly FormulaError[] = [
   "#NAME?",
   "#NUM!",
   "#N/A",
+  "#SPILL!",
+  "#CALC!",
 ];
 export const NUMBER_PATTERN = /^[+-]?(?:\d+(?:\.\d+)?|\.\d+)(?:[eE][+-]?\d+)?$/;
 export const MAX_LENGTH = 8192;

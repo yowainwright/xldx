@@ -100,8 +100,7 @@ export class FormulaParser {
     }
     const name = token.toUpperCase();
     if (this.token === "(") {
-      if (name !== "SUM") throw new FormulaFault("unsupported", `Unsupported function: ${name}`);
-      const expression = this.sum(depth + 1);
+      const expression = this.call(name, depth + 1);
       return expression;
     }
     const boolean = name === "TRUE" || name === "FALSE";
@@ -138,7 +137,20 @@ export class FormulaParser {
     return expression;
   }
 
-  private sum(depth: number): Expression {
+  private call(name: string, depth: number): Expression {
+    if (name === "SUM") {
+      const args = this.arguments(depth);
+      const expression: Expression = { kind: "sum", args };
+      return expression;
+    }
+    const supported = name === "MID" || name === "SEQUENCE";
+    if (!supported) throw new FormulaFault("unsupported", `Unsupported function: ${name}`);
+    const args = this.arguments(depth);
+    const expression: Expression = { kind: "call", name, args };
+    return expression;
+  }
+
+  private arguments(depth: number): Expression[] {
     checkDepth(depth);
     this.take("(");
     const args = [this.expression(depth)];
@@ -147,7 +159,6 @@ export class FormulaParser {
       args[args.length] = this.expression(depth);
     }
     this.take(")");
-    const expression: Expression = { kind: "sum", args };
-    return expression;
+    return args;
   }
 }

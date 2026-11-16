@@ -8,7 +8,7 @@
     },
     "build": {
       "dependsOn": ["//#build:pkg"],
-      "outputs": [".next/**", "!.next/cache/**", "!.next/dev/**", "out/**"]
+      "outputs": ["dist/**"]
     },
     "//#test:run": {
       "dependsOn": ["//#build:pkg", "//#lint:run", "//#typecheck:run"],

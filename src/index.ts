@@ -31,6 +31,7 @@ export type {
   FormulaValue,
   FormulaIssue,
   Calculation,
+  SpillRange,
 } from "./formula/types.js";
 
 export class Xldx {
@@ -134,7 +135,7 @@ export class Xldx {
     const writer = new XlsxWriter();
     const { sheets } = this.calculate().workbook;
     sheets.forEach((sheet) => {
-      writer.addWorksheet(sheet.name, sheet.data, sheet.columnWidths);
+      writer.addWorksheet(sheet.name, sheet.data, sheet.columnWidths, sheet.spills);
     });
     const data = writer.generate();
     return data;

@@ -5,9 +5,12 @@ import type {
   ColorTheme,
   PatternContext,
 } from "../../../src/index";
-import { describe, it, expect, beforeAll, beforeEach } from "bun:test";
+import { afterEach, describe, it, expect, beforeAll, beforeEach } from "bun:test";
 import { Xldx } from "../../../src/browser/index";
+import { setTheme } from "../../../src/utils";
+import { defaultTheme } from "../../../src/themes/index";
 import { setupDOMMocks, resetMocks, mockElement, mockDocument, mockURL } from "./utils.test";
+afterEach(() => setTheme(defaultTheme));
 describe("Browser Integration Tests", testBrowserIntegrationTests);
 function testBrowserIntegrationTests() {
   beforeAll(() => {

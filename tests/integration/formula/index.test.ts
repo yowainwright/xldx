@@ -4,6 +4,43 @@ import { MiniUnzip, MiniZip } from "../../../src/zip/index";
 import { Xldx } from "../../../src/index";
 import manifest from "../../../fixtures/formula/manifest.json";
 
+test.each(["MYSEQUENCE(1)", "OTHER.SEQUENCE(1)", "MY_xlfn.SEQUENCE(1)", "éSEQUENCE(1)"])(
+  "preserves the complete unsupported function name on export: %s",
+  async (formula) => {
+    const writer = new XlsxWriter();
+    writer.addWorksheet("Data", [[{ formula }]]);
+    const bytes = writer.generate();
+    const xml = new MiniUnzip(bytes).getFile("xl/worksheets/sheet1.xml");
+    expect(xml).toContain(`<f>${formula}</f>`);
+    const imported = await Xldx.read(bytes);
+    expect(imported.sheets[0].data[0][0]).toEqual({ formula });
+  },
+);
+
+const date = new Date(2024, 0, 1);
+const font = { bold: true };
+const style = { font };
+const styledNumber = { value: 2, style };
+const styledDate = { value: date };
+
+test.each([{ value: 2 }, styledNumber, date, styledDate])(
+  "references values consistently with XLSX encoding: %j",
+  async (source) => {
+    const writer = new XlsxWriter();
+    writer.addWorksheet("Data", [[source]]);
+    const encoded = new XlsxReader(writer.generate()).read().sheets[0].data[0][0];
+    expect(typeof encoded).toBe("number");
+    const result = Number(encoded) * 2;
+    const data = [[source, { formula: "A1*2" }]];
+    const sheets = [{ name: "Data", data }];
+    const book = Xldx.fromJSON({ sheets });
+    const expected = { formula: "A1*2", result };
+    expect(book.calculate().workbook.sheets[0].data[0][1]).toEqual(expected);
+    const exported = await Xldx.read(await book.toUint8Array());
+    expect(exported.sheets[0].data[0]).toEqual([encoded, expected]);
+  },
+);
+
 test("preserves standalone Excel errors and propagates them through references", async () => {
   const zip = new MiniZip();
   zip.addFile("xl/workbook.xml", '<workbook><sheets><sheet name="Data"/></sheets></workbook>');

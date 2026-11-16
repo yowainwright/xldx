@@ -3,7 +3,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { FormulaBarProps } from "../types";
 
-export function FormulaBar({ selected, formula, error, onFormulaChange, onRun }: FormulaBarProps) {
+export function FormulaBar({
+  selected,
+  formula,
+  error,
+  readOnly,
+  onFormulaChange,
+  onRun,
+}: FormulaBarProps) {
   const submit = (event: FormEvent) => {
     event.preventDefault();
     onRun();
@@ -25,6 +32,7 @@ export function FormulaBar({ selected, formula, error, onFormulaChange, onRun }:
       <Input
         id="spreadsheet-formula"
         value={formula}
+        readOnly={readOnly}
         onChange={change}
         maxLength={8193}
         aria-label="Formula"
@@ -34,7 +42,9 @@ export function FormulaBar({ selected, formula, error, onFormulaChange, onRun }:
         spellCheck={false}
         className="font-mono"
       />
-      <Button type="submit">Run</Button>
+      <Button type="submit" disabled={readOnly}>
+        Run
+      </Button>
     </form>
   );
 }

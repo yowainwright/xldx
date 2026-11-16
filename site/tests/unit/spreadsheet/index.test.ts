@@ -53,6 +53,25 @@ describe("spreadsheet edits", () => {
 });
 
 describe("letter grid", () => {
+  test("one visible formula generates the logo and clearing it removes the pixels", () => {
+    const book = createSpreadsheet();
+    const source = book.toJSON().sheets[0].data[0][0];
+    expect(readInput(source)).toMatch(/^=MID\("[01]+",SEQUENCE\(18,50\),1\)$/);
+    const calculated = book.calculate();
+    expect(calculated.issues).toEqual([]);
+    expect(calculated.workbook.sheets[0].spills).toEqual([
+      { row: 0, column: 0, rows: 18, columns: 50 },
+    ]);
+    expect(calculated.workbook.sheets[0].data[6][2]).toBe("1");
+    const cleared = Effect.runSync(commitCell(book, "A1", ""));
+    expect(cleared.calculate().workbook.sheets[0].spills).toBeUndefined();
+    expect(
+      cleared
+        .calculate()
+        .workbook.sheets[0].data.flat()
+        .every((value) => value === null),
+    ).toBe(true);
+  });
   test("renders four distinct letters with padding and spacing", () => {
     const grid = createGrid("#10b981");
     expect(grid).toHaveLength(18);

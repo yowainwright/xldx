@@ -11,13 +11,15 @@ interface QueryProviderProps {
 }
 
 export function QueryProvider({ children }: QueryProviderProps) {
+  const isServer = typeof window === "undefined";
+  const gcTime = isServer ? Infinity : CACHE_TIME_MS;
   const [queryClient] = useState(
     () =>
       new QueryClient({
         defaultOptions: {
           queries: {
             staleTime: 60 * 1000,
-            gcTime: CACHE_TIME_MS,
+            gcTime,
           },
         },
       }),

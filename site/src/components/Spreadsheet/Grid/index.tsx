@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { COLUMN_COUNT, DEFAULT_COLOR } from "../constants";
-import { columnLabel, isLetterCell, readDisplay } from "../utils";
+import { columnLabel, spillAt, readDisplay } from "../utils";
 import type { GridProps } from "../types";
 
 const columns = Array.from({ length: COLUMN_COUNT }, (_, index) => columnLabel(index));
@@ -44,14 +44,18 @@ function GridCell({
   const address = `${columnLabel(column)}${row + 1}`;
   const active = props.selected.row === row && props.selected.column === column;
   const editing = active && props.editing;
-  const backgroundColor = isLetterCell(row, column) ? DEFAULT_COLOR : undefined;
+  const spill = spillAt(props.spills, row, column);
+  const text = readDisplay(value);
+  const filled = Boolean(spill) && text === "1";
+  const backgroundColor = filled ? DEFAULT_COLOR : undefined;
   const style = { backgroundColor };
   const className = active
     ? "border-r p-0 outline outline-2 -outline-offset-2 outline-primary"
     : "border-r p-0";
   const select = () => props.onSelect(row, column);
   const edit = () => props.onEdit(row, column);
-  const display = readDisplay(value);
+  const pixel = Boolean(spill) && (text === "0" || text === "1");
+  const display = pixel ? "" : text;
   return (
     <TableCell style={style} className={className}>
       {editing ? (

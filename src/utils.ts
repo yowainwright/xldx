@@ -25,6 +25,17 @@ export function setTheme(theme: ColorTheme) {
   currentTheme = theme;
 }
 
+export function readCellValue(cell: unknown): unknown {
+  const object = typeof cell === "object" && cell !== null;
+  const styled = object && "value" in cell;
+  const value = styled ? cell.value : cell;
+  if (!(value instanceof Date)) return value;
+  const epoch = new Date(1900, 0, 1).getTime();
+  const days = (value.getTime() - epoch) / 86400000;
+  const serial = Math.floor(days) + 2;
+  return serial;
+}
+
 export function zebraBg(context: PatternContext): ReturnType<PatternFunction> {
   const isEvenRow = context.rowIndex % 2 === 0;
   if (!isEvenRow) return null;

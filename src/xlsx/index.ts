@@ -1,18 +1,31 @@
 import { MiniZip, MiniUnzip } from "../zip/index.js";
 import type { CellValue, Worksheet, EncodedCell } from "./types.js";
 import type { Workbook } from "../types.js";
-import { EMPTY_CELL, STYLES_XML } from "./constants.js";
-import { isFormulaError, normalizeFormula, normalizeResult } from "../formula/utils.js";
-import type { FormulaValue, FormulaResult } from "../formula/types.js";
+import { readCellValue } from "../utils.js";
+import { ARRAY_METADATA_XML, EMPTY_CELL, STYLES_XML } from "./constants.js";
+import {
+  cellAddress,
+  excelFormula,
+  isFormulaError,
+  normalizeFormula,
+  normalizeResult,
+  parseAddress,
+} from "../formula/utils.js";
+import type { FormulaValue, FormulaResult, SpillRange } from "../formula/types.js";
 
 export class XlsxWriter {
   private worksheets: Worksheet[] = [];
   private sharedStrings: string[] = [];
   private stringMap: Map<string, number> = new Map();
 
-  addWorksheet(name: string, data: unknown[][], columnWidths?: number[]): void {
+  addWorksheet(
+    name: string,
+    data: unknown[][],
+    columnWidths?: number[],
+    spills?: SpillRange[],
+  ): void {
     const cells = data.map((row) => row.slice());
-    this.worksheets[this.worksheets.length] = { name, data: cells, columnWidths };
+    this.worksheets[this.worksheets.length] = { name, data: cells, columnWidths, spills };
   }
 
   private addSharedString(str: string): number {
@@ -27,8 +40,7 @@ export class XlsxWriter {
   private getCellValue(cell: unknown): EncodedCell {
     const hasCell = cell !== null && cell !== undefined;
     if (!hasCell) return EMPTY_CELL;
-    const isStyled = typeof cell === "object" && "value" in cell;
-    const value = isStyled ? cell.value : cell;
+    const value = readCellValue(cell);
     const objectValue = typeof value === "object" && value !== null;
     const errorCell = objectValue && "error" in value;
     if (errorCell) {
@@ -43,7 +55,7 @@ export class XlsxWriter {
   private encodeValue(value: unknown): EncodedCell {
     const isEmpty = value === null || value === undefined;
     if (isEmpty) return EMPTY_CELL;
-    const isNumber = typeof value === "number" || value instanceof Date;
+    const isNumber = typeof value === "number";
     if (isNumber) {
       const encoded = this.encodeNumber(value);
       return encoded;
@@ -56,16 +68,8 @@ export class XlsxWriter {
     return encoded;
   }
 
-  private encodeNumber(value: number | Date): EncodedCell {
-    let serial: number;
-    if (value instanceof Date) {
-      const epoch = new Date(1900, 0, 1).getTime();
-      const days = (value.getTime() - epoch) / 86400000;
-      serial = Math.floor(days) + 2;
-    } else {
-      serial = value;
-    }
-    const content = String(serial);
+  private encodeNumber(value: number): EncodedCell {
+    const content = String(value);
     const encoded = { type: "n", value: content };
     return encoded;
   }
@@ -82,6 +86,9 @@ export class XlsxWriter {
   }
 
   private generateContentTypes(): string {
+    const metadata = this.hasArrays()
+      ? '<Override PartName="/xl/metadata.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheetMetadata+xml"/>'
+      : "";
     const xml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
   <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
@@ -95,7 +102,7 @@ export class XlsxWriter {
     .join("\n  ")}
   <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
   <Override PartName="/xl/sharedStrings.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml"/>
-</Types>`;
+${metadata}</Types>`;
     return xml;
   }
 
@@ -123,6 +130,9 @@ export class XlsxWriter {
   }
 
   private generateWorkbookRels(): string {
+    const metadata = this.hasArrays()
+      ? `<Relationship Id="rId${this.worksheets.length + 3}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sheetMetadata" Target="metadata.xml"/>`
+      : "";
     const xml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
   ${this.worksheets
@@ -133,13 +143,13 @@ export class XlsxWriter {
     .join("\n  ")}
   <Relationship Id="rId${this.worksheets.length + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
   <Relationship Id="rId${this.worksheets.length + 2}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings" Target="sharedStrings.xml"/>
-</Relationships>`;
+${metadata}</Relationships>`;
     return xml;
   }
 
   private generateWorksheet(sheet: Worksheet): string {
     const cols = this.generateColumns(sheet.columnWidths);
-    const serialized = sheet.data.map((row, index) => this.generateRow(row, index));
+    const serialized = sheet.data.map((row, index) => this.generateRow(row, index, sheet.spills));
     const rows = serialized.filter(Boolean).join("\n");
     const xml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">${cols}
@@ -161,19 +171,25 @@ ${rows}
     return xml;
   }
 
-  private generateRow(row: unknown[], rowIndex: number): string {
-    const serialized = row.map((cell, index) => this.generateCell(cell, rowIndex, index));
+  private generateRow(row: unknown[], rowIndex: number, spills: SpillRange[] = []): string {
+    const serialized = row.map((cell, index) => this.generateCell(cell, rowIndex, index, spills));
     const cells = serialized.filter(Boolean).join("\n");
     if (!cells) return "";
     const xml = `    <row r="${rowIndex + 1}">\n${cells}\n    </row>`;
     return xml;
   }
 
-  private generateCell(cell: unknown, rowIndex: number, columnIndex: number): string {
+  private generateCell(
+    cell: unknown,
+    rowIndex: number,
+    columnIndex: number,
+    spills: SpillRange[],
+  ): string {
     const cellRef = `${this.columnToLetters(columnIndex)}${rowIndex + 1}`;
     const formula = normalizeFormula(cell);
     if (formula) {
-      const xml = this.generateFormulaCell(cellRef, formula);
+      const spill = spills.find((range) => range.row === rowIndex && range.column === columnIndex);
+      const xml = this.generateFormulaCell(cellRef, formula, spill);
       return xml;
     }
     const { type, value } = this.getCellValue(cell);
@@ -183,16 +199,26 @@ ${rows}
     return xml;
   }
 
-  private generateFormulaCell(reference: string, cell: FormulaValue): string {
-    const expression = this.escapeXml(cell.formula);
+  private generateFormulaCell(reference: string, cell: FormulaValue, spill?: SpillRange): string {
+    const source = excelFormula(cell.formula, true);
+    const expression = this.escapeXml(source);
+    const formulaAttributes = this.arrayAttributes(reference, spill);
+    const metadata = spill ? ' cm="1"' : "";
     if (!("result" in cell)) {
-      const xml = `<c r="${reference}"><f>${expression}</f></c>`;
+      const xml = `<c r="${reference}"${metadata}><f${formulaAttributes}>${expression}</f></c>`;
       return xml;
     }
     const { type, value } = this.encodeFormulaResult(cell.result);
     const escaped = this.escapeXml(value);
-    const xml = `<c r="${reference}" t="${type}"><f>${expression}</f><v>${escaped}</v></c>`;
+    const xml = `<c r="${reference}" t="${type}"${metadata}><f${formulaAttributes}>${expression}</f><v>${escaped}</v></c>`;
     return xml;
+  }
+
+  private arrayAttributes(reference: string, spill?: SpillRange): string {
+    if (!spill) return "";
+    const end = cellAddress(spill.row + spill.rows - 1, spill.column + spill.columns - 1);
+    const attributes = ` t="array" ref="${reference}:${end}"`;
+    return attributes;
   }
 
   private encodeFormulaResult(result: FormulaResult | undefined): EncodedCell {
@@ -241,6 +267,7 @@ ${rows}
     zip.addFile("xl/workbook.xml", this.generateWorkbook());
     zip.addFile("xl/_rels/workbook.xml.rels", this.generateWorkbookRels());
     zip.addFile("xl/styles.xml", STYLES_XML);
+    if (this.hasArrays()) zip.addFile("xl/metadata.xml", ARRAY_METADATA_XML);
     zip.addFile("xl/sharedStrings.xml", this.generateSharedStrings());
 
     worksheetXml.forEach((xml, i) => {
@@ -250,10 +277,16 @@ ${rows}
     const data = zip.generate();
     return data;
   }
+
+  private hasArrays(): boolean {
+    const arrays = this.worksheets.some((sheet) => Boolean(sheet.spills?.length));
+    return arrays;
+  }
 }
 
 export class XlsxReader {
   private zip: MiniUnzip;
+  private spills: SpillRange[] = [];
 
   constructor(data: Uint8Array) {
     this.zip = new MiniUnzip(data);
@@ -288,6 +321,7 @@ export class XlsxReader {
   }
 
   private parseWorksheet(sheetIndex: number, sharedStrings: string[]): CellValue[][] {
+    this.spills = [];
     const content = this.zip.getFile(`xl/worksheets/sheet${sheetIndex + 1}.xml`);
     const rows: CellValue[][] = [];
     if (!content) return rows;
@@ -307,12 +341,17 @@ export class XlsxReader {
       if (!address) continue;
       const index = this.lettersToColumn(address[1]);
       const type = /\bt="([^"]*)"/.exec(match[1])?.[1] ?? "n";
-      row[index] = this.parseCell(type, match[2] ?? "", sharedStrings);
+      row[index] = this.parseCell(type, match[2] ?? "", sharedStrings, match[1]);
     }
     return row;
   }
 
-  private parseCell(type: string, content: string, sharedStrings: string[]): CellValue {
+  private parseCell(
+    type: string,
+    content: string,
+    sharedStrings: string[],
+    attributes: string,
+  ): CellValue {
     const expression = /<f\b([^>]*?)(?:\/>|>([\s\S]*?)<\/f>)/.exec(content);
     const cached = /<v(?:\s[^>]*)?>([\s\S]*?)<\/v>|<v\s*\/>/.exec(content);
     const value = cached?.[1] ?? "";
@@ -321,16 +360,36 @@ export class XlsxReader {
       const decoded = this.decodeCell(type, value, sharedStrings);
       return decoded;
     }
-    const encoding = /\bt="([^"]*)"/.exec(expression[1])?.[1] ?? "normal";
-    if (encoding !== "normal") throw new Error(`Unsupported formula encoding: ${encoding}`);
-    const formula = this.unescapeXml(expression[2] ?? "");
-    if (!cached) {
-      const cell = normalizeFormula({ formula });
-      return cell;
-    }
-    const result = this.decodeCell(type, value, sharedStrings);
-    const cell = normalizeFormula({ formula, result });
+    const formula = this.readFormula(expression, attributes);
+    const result = cached ? this.decodeCell(type, value, sharedStrings) : undefined;
+    const source = cached ? { formula, result } : { formula };
+    const cell = normalizeFormula(source);
     return cell;
+  }
+
+  private readFormula(expression: string[], attributes: string): string {
+    const encoding = /\bt="([^"]*)"/.exec(expression[1])?.[1] ?? "normal";
+    if (encoding === "array") this.readArray(expression[1], attributes);
+    else if (encoding !== "normal") throw new Error(`Unsupported formula encoding: ${encoding}`);
+    const source = this.unescapeXml(expression[2] ?? "");
+    const formula = excelFormula(source, false);
+    return formula;
+  }
+
+  private readArray(formula: string, attributes: string): void {
+    const metadata = this.zip.getFile("xl/metadata.xml");
+    const dynamic = /\bcm="1"/.test(attributes) && metadata?.includes('name="XLDAPR"');
+    const reference = /\bref="([^"]+)"/.exec(formula)?.[1];
+    const unsupported = !dynamic || !reference;
+    if (unsupported) throw new Error("Unsupported formula encoding: array");
+    const [first, last = first] = reference.split(":");
+    const { row, column } = parseAddress(first);
+    const end = parseAddress(last);
+    const rows = end.row - row + 1;
+    const columns = end.column - column + 1;
+    const reversed = rows < 1 || columns < 1;
+    if (reversed) throw new Error("Invalid array formula range");
+    this.spills[this.spills.length] = { row, column, rows, columns };
   }
 
   private decodeCell(type: string, value: string, sharedStrings: string[]) {
@@ -381,7 +440,9 @@ export class XlsxReader {
 
     const sheets = sheetNames.map((name, i) => {
       const data = this.parseWorksheet(i, sharedStrings);
-      const sheet = { name, data };
+      const { spills } = this;
+      const metadata = spills.length ? { spills } : {};
+      const sheet: Worksheet = { name, data, ...metadata };
       return sheet;
     });
     const workbook = { sheets };

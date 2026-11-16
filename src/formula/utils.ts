@@ -93,6 +93,17 @@ export function cellAddress(row: number, column: number): string {
   const address = `${prefix}${letter}${row + 1}`;
   return address;
 }
+export function excelFormula(source: string, encode: boolean): string {
+  const tokens = /"(?:""|[^"])*"|[\p{L}\p{N}\p{M}_.$\\]+\s*\(/giu;
+  const formula = source.replace(tokens, (token) => {
+    const sequence = /^(?:_xlfn\.)?SEQUENCE\s*\($/i.test(token);
+    if (!sequence) return token;
+    const name = encode ? "_xlfn.SEQUENCE(" : "SEQUENCE(";
+    return name;
+  });
+  return formula;
+}
+
 function numericArgument(value: FormulaArgument): string | undefined {
   const finiteNumber = typeof value === "number" && Number.isFinite(value);
   if (!finiteNumber) return undefined;

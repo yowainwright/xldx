@@ -1,5 +1,8 @@
+import type { SpillRange } from "xldx";
+
 export interface GridProps {
   data: unknown[][];
+  spills: SpillRange[];
   selected: { row: number; column: number };
   editing: boolean;
   draft: string;
@@ -14,6 +17,7 @@ export interface FormulaBarProps {
   selected: string;
   formula: string;
   error: string | undefined;
+  readOnly: boolean;
   onFormulaChange: (formula: string) => void;
   onRun: () => void;
 }

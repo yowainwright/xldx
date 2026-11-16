@@ -22,7 +22,7 @@ jobs:
       - name: Get Bun cache directory
         id: bun-cache
         run: |
-          echo "bun_cache_dir=$(bun pm cache dir)" >> "$GITHUB_OUTPUT"
+          echo "bun_cache_dir=$(bun pm cache)" >> "$GITHUB_OUTPUT"
 
       - uses: actions/cache@v4
         name: Setup Bun cache
@@ -43,6 +43,8 @@ jobs:
           TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
           TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
       - run: bun run typecheck
+      - run: bunx playwright install --with-deps chromium
+      - run: bun run --cwd site test:runtime
       - run: bun run format:check
       - run: bun run --cwd site format:check
       - run: bun run lint

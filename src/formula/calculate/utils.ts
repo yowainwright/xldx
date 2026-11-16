@@ -4,6 +4,7 @@ import type { Operator, Scalar } from "../parser/types.js";
 
 export function numeric(value: Scalar): number {
   if (value === null) return 0;
+  if (typeof value === "object") throw new FormulaFault("value", value.error, value.error);
   if (typeof value === "number") return value;
   if (typeof value === "boolean") {
     const number = Number(value);

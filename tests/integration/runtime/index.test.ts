@@ -20,6 +20,35 @@ const server = `
   console.log(JSON.stringify(await Xldx.read(view)));
 `;
 
+const schemaAliases = `
+  import type * as API from "PACKAGE";
+  type Previous = [
+    API.FontStyleSchema, API.FillStyleSchema, API.BorderStyleSchema,
+    API.BordersStyleSchema, API.AlignmentStyleSchema, API.CellStyleSchema,
+    API.PatternContextSchema, API.PatternFunctionSchema, API.ColumnPatternSchema,
+    API.RowStyleOverrideSchema, API.ColumnDefinitionSchema,
+    API.SheetOptionsSchema, API.XldxOptionsSchema,
+  ];
+  type Current = [
+    API.FontStyle, API.FillStyle, API.BorderStyle,
+    API.BordersStyle, API.AlignmentStyle, API.CellStyle,
+    API.PatternContext, API.PatternFunction, API.ColumnPattern,
+    API.RowStyleOverride, API.ColumnDefinition, API.SheetOptions, API.XldxOptions,
+  ];
+  declare const previous: Previous;
+  declare const current: Current;
+  export const restored: Current = previous;
+  export const compatible: Previous = current;
+`;
+
+it.each([
+  ["xldx", "nodenext"],
+  ["xldx/browser", "bundler"],
+])("preserves public schema type aliases for %s consumers", (entry, resolution) => {
+  const source = schemaAliases.replace("PACKAGE", entry);
+  expect(checkTypes(source, resolution)).toBe("");
+});
+
 it("exposes Node methods to NodeNext TypeScript consumers", () => {
   const source = 'import { Xldx } from "xldx"; new Xldx([]).toBuffer();';
   expect(checkTypes(source, "nodenext")).toBe("");

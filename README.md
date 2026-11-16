@@ -160,15 +160,29 @@ diagnostics. Ordinary strings beginning with `=` remain literal.
 
 Supported syntax is `+ - * /`, unary signs, parentheses, numbers, quoted strings,
 booleans, same-sheet A1 references with optional `$`, and rectangular ranges inside
-SUM. Other functions, cross-sheet references, arrays, and locale conversions are
-unsupported. Cycles report `#REF!` with a cycle diagnostic. Calculation limits are
+SUM. `SEQUENCE(rows, columns, start, step)` generates a rectangular array; optional
+trailing arguments default to 1. `MID(text, start, length)` extracts text and maps
+over array arguments. Array arithmetic and unary signs calculate element by element;
+an error stays in its own cell without discarding neighboring results.
+An array result spills from its formula cell into empty neighboring cells;
+occupied cells or worksheet edges report `#SPILL!`. Calculated sheets expose their
+spill ranges as `spills`; source JSON retains only the anchor formula. XLSX export
+writes the array range, cached results, and dynamic-array metadata.
+References interpret styled `{ value }` cells and dates using the same conversion
+as XLSX export.
+
+Other functions, cross-sheet references, array literals, spill-range operators,
+and locale conversions are unsupported. Cycles report `#REF!` with a cycle diagnostic. Calculation limits are
 8,192 characters per expression, 128 nesting levels, and 100,000 cell visits per
 worksheet pass. Addressed edits include the header at A1; existing body row index
 zero remains A2. The homepage supports selection, formula-bar edits, and direct
 editing by double-click or Enter/F2.
 
-XLSX imports currently support uncompressed ZIP entries and normal single-cell
-formulas. Compressed entries and shared/array/data-table formulas fail explicitly.
+XLSX imports currently support uncompressed ZIP entries, normal single-cell
+formulas, and dynamic arrays carrying XLDAPR metadata. Compressed entries and
+shared/legacy-array/data-table formulas fail explicitly.
+`fromJSON` rejects imported arrays that the engine cannot recalculate, preserving
+the caller's cached workbook data instead of silently discarding generated cells.
 The independent Excel fixture and its provenance are in `fixtures/formula/`.
 
 ## Development
@@ -184,7 +198,7 @@ configuration formats: `.fs-lintrc`, `.src-lintrc`, `.legibilityrc`, and
 <!-- workspace task orchestration from turbo.json and both package.json files -->
 Workspace build, test, typecheck, lint, format, and development commands run
 through Turbo. The library build produces `dist/` before the site builds its
-Next.js output and static export. Build and check results are cached; lint and
+Vinext output and static export. Build and check results are cached; lint and
 format always run. Root tests wait for the library build, lint, and typecheck
 because the lint-policy tests temporarily create invalid source files.
 
@@ -226,6 +240,10 @@ GitHub Pages deployment is manual. Run **Deploy to GitHub Pages** from Actions
 and answer **Deploy to Pages?**: **Yes** builds and deploys; **No** builds and
 skips deployment without failing the workflow. Build and deployment errors
 still fail normally. Pushes to `main` do not deploy automatically.
+
+The site uses Vinext and Vite, with static HTML and navigation payloads for
+`https://jeffry.in/xldx/`. The Pages artifact is `site/dist/client/xldx/`;
+Vinext includes the `/xldx` base path in its output directory structure.
 
 <!-- source and test path policies from .fs-lintrc; checks from .legibilityrc and package.json scripts -->
 

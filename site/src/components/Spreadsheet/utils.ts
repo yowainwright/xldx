@@ -1,5 +1,5 @@
 import { Data, Effect } from "effect";
-import { Formula, Xldx } from "xldx";
+import { Formula, Xldx, type SpillRange } from "xldx";
 import { COLUMN_COUNT, GLYPHS, ROW_COUNT } from "./constants";
 
 export class CellEditError extends Data.TaggedError("CellEditError")<{
@@ -11,7 +11,22 @@ export function createSpreadsheet(): Xldx {
     Array.from({ length: COLUMN_COUNT }, () => null),
   );
   const sheets = [{ name: "Sheet 1", data }];
-  return Xldx.fromJSON({ sheets });
+  const book = Xldx.fromJSON({ sheets });
+  const bitmap = createGrid("1")
+    .flat()
+    .map((pixel) => pixel ?? "0")
+    .join("");
+  const formula = Formula.parse(`MID("${bitmap}",SEQUENCE(${ROW_COUNT},${COLUMN_COUNT}),1)`);
+  book.getSheetData(0).updateCellData("A1", formula);
+  return book;
+}
+
+export function spillAt(spills: SpillRange[], row: number, column: number) {
+  return spills.find((range) => {
+    const withinRows = row >= range.row && row < range.row + range.rows;
+    const withinColumns = column >= range.column && column < range.column + range.columns;
+    return withinRows && withinColumns;
+  });
 }
 
 function parseInput(input: string): unknown {

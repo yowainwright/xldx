@@ -7,7 +7,9 @@ import type {
 } from "../schemas/index.js";
 import type { DataRow, ColumnData, CellProcessingParams } from "../types.js";
 import type { Worksheet } from "../xlsx/types.js";
-import { normalizeFormula, parseAddress } from "../formula/utils.js";
+import { cellAddress, normalizeFormula, parseAddress } from "../formula/utils.js";
+import type { SpillRange } from "../formula/types.js";
+import { calculateWorkbook } from "../formula/calculate/index.js";
 import {
   applyPattern,
   buildPatternContext,
@@ -36,25 +38,65 @@ export class Sheet {
   }
 
   static fromWorksheet(worksheet: Worksheet): Sheet {
-    worksheet.data.forEach(Sheet.normalizeRow);
-    const data = worksheet.data.slice(1).map(Sheet.readWorksheetRow);
-    const columns = Sheet.readWorksheetColumns(worksheet);
+    const source = Sheet.readSource(worksheet);
+    source.forEach(Sheet.normalizeRow);
+    const data = Array.from(source.slice(1), Sheet.readWorksheetRow);
+    const columns = Sheet.readWorksheetColumns(worksheet, source);
     const { name } = worksheet;
     const sheet = new Sheet(data, columns, { name });
     const hasRows = worksheet.data.length > 0;
-    sheet.headerRow = hasRows ? (worksheet.data[0]?.slice() ?? []) : undefined;
+    sheet.headerRow = hasRows ? (source[0]?.slice() ?? []) : undefined;
     return sheet;
   }
 
-  private static readWorksheetRow(row: unknown[]): DataRow {
+  private static readSource(worksheet: Worksheet): unknown[][] {
+    const { data: source, spills } = worksheet;
+    const data = Array.from(source, (row) => {
+      const cells = row?.slice() ?? [];
+      return cells;
+    });
+    if (!spills?.length) return data;
+    spills.forEach((range) => Sheet.clearSpill(data, range));
+    Sheet.validateSpills(worksheet.name, data, spills);
+    return data;
+  }
+
+  private static validateSpills(name: string, data: unknown[][], expected: SpillRange[]): void {
+    const sheet = { name, data };
+    const sheets = [sheet];
+    const calculated = calculateWorkbook({ sheets });
+    const actual = calculated.workbook.sheets[0].spills ?? [];
+    const anchors = actual.map((range) => cellAddress(range.row, range.column));
+    const supported = new Set(anchors);
+    const missing = expected.find((range) => {
+      const address = cellAddress(range.row, range.column);
+      const unsupported = !supported.has(address);
+      return unsupported;
+    });
+    if (!missing) return;
+    const address = cellAddress(missing.row, missing.column);
+    throw new TypeError(`Cannot restore unsupported dynamic array at ${address}`);
+  }
+
+  private static clearSpill(data: unknown[][], range: SpillRange): void {
+    const count = range.rows * range.columns;
+    for (let index = 1; index < count; index++) {
+      const row = range.row + Math.floor(index / range.columns);
+      const column = range.column + (index % range.columns);
+      const cells = data[row];
+      if (cells) cells[column] = null;
+    }
+  }
+
+  private static readWorksheetRow(row: unknown[] = []): DataRow {
     const entries = Array.from(row, (value, index) => [String(index), value]);
     const record: DataRow = Object.fromEntries(entries);
     return record;
   }
 
-  private static readWorksheetColumns(worksheet: Worksheet): ColumnDefinition[] {
+  private static readWorksheetColumns(worksheet: Worksheet, data: unknown[][]): ColumnDefinition[] {
     const widths = worksheet.columnWidths || [];
-    const count = worksheet.data.reduce((maximum, row) => {
+    const count = data.reduce((maximum, row) => {
       const width = Math.max(maximum, row.length);
       return width;
     }, widths.length);

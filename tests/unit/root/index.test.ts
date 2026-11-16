@@ -6,7 +6,7 @@ import type {
   SheetOptions,
   ColumnDefinition,
 } from "../../../src/index";
-import { describe, it, expect } from "bun:test";
+import { afterEach, describe, it, expect } from "bun:test";
 import { Xldx } from "../../../src/server/index";
 import {
   zebraBg,
@@ -15,9 +15,11 @@ import {
   createSetWidthBasedOnCharacterCount,
   applyPattern,
   buildPatternContext,
+  setTheme,
 } from "../../../src/utils";
 import { defaultTheme } from "../../../src/themes/index";
 import type { PatternContext, DataRow, ColorTheme } from "../../../src/index";
+afterEach(() => setTheme(defaultTheme));
 describe("index", testIndex);
 function testIndex() {
   describe("getSheetData", testGetSheetData);

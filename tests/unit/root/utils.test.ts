@@ -1,6 +1,6 @@
 import type { FillStyle, FontStyle, RowStyleOverride } from "../../../src/index";
 import type { WidthCalculationOptions, CellStyleParams } from "../../../src/types";
-import { describe, it, expect } from "bun:test";
+import { afterEach, describe, it, expect } from "bun:test";
 import {
   zebraBg,
   bgColorBasedOnDiff,
@@ -15,6 +15,7 @@ import {
 } from "../../../src/utils";
 import { defaultTheme } from "../../../src/themes/index";
 import type { PatternContext, DataRow, CellStyle, ColumnDefinition } from "../../../src/index";
+afterEach(() => setTheme(defaultTheme));
 describe("Pattern Functions", testPatternFunctions);
 describe("Width Calculation", testWidthCalculation);
 describe("customizeInput", testCustomizeInput);
