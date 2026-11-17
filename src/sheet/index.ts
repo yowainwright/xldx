@@ -119,7 +119,8 @@ export class Sheet {
     }
 
     if (isAutoWidth) {
-      const columnData = this.data.map((row) => row[column.key]);
+      const sampledRows = this.data.slice(0, 100);
+      const columnData = sampledRows.map((row) => row[column.key]);
       const widthResult = createSetWidthBasedOnCharacterCount(columnData)();
       const width = widthResult?.width;
       return width;
@@ -139,6 +140,10 @@ export class Sheet {
   private buildProcessedRow(rowData: DataRow, rowIndex: number): unknown[] {
     const { data: allData } = this;
     const row = this.columns.map((column, columnIndex) => {
+      if (!column.patterns) {
+        const value = rowData[column.key];
+        return value;
+      }
       const params = { rowData, rowIndex, column, columnIndex, allData };
       const context = this.createPatternContext(params);
       const value = rowData[column.key];

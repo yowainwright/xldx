@@ -6,7 +6,11 @@
       "root": "src",
       "public": ["index.ts", "browser/index.ts", "server/index.ts"]
     },
-    "tests": { "root": "tests", "allow": ["src/**"] },
+    "tests": {
+      "root": "tests",
+      "allow": ["src/**", "scripts/size/**", "scripts/benchmark/**"]
+    },
+    "scripts": { "root": "scripts", "allow": ["src/zip/index.ts"] },
     "site": { "root": "site" }
   }
 }

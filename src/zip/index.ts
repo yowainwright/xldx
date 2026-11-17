@@ -1,6 +1,7 @@
 import type { FileEntry, ZipRecord, ZipParts } from "./types.js";
 
 export class MiniZip {
+  private static crcTable: Uint32Array | undefined;
   private files: FileEntry[] = [];
 
   addFile(path: string, content: string | Uint8Array): void {
@@ -12,7 +13,7 @@ export class MiniZip {
 
   private crc32(data: Uint8Array): number {
     let crc = 0xffffffff;
-    const table = this.getCRC32Table();
+    const table = MiniZip.getCRC32Table();
 
     for (let i = 0; i < data.length; i++) {
       crc = (crc >>> 8) ^ table[(crc ^ data[i]) & 0xff];
@@ -22,12 +23,15 @@ export class MiniZip {
     return checksum;
   }
 
-  private getCRC32Table(): Uint32Array {
-    const table = Uint32Array.from({ length: 256 }, (_, index) => this.crcTableEntry(index));
+  private static getCRC32Table(): Uint32Array {
+    const { crcTable } = MiniZip;
+    if (crcTable) return crcTable;
+    const table = Uint32Array.from({ length: 256 }, (_, index) => MiniZip.crcTableEntry(index));
+    MiniZip.crcTable = table;
     return table;
   }
 
-  private crcTableEntry(index: number): number {
+  private static crcTableEntry(index: number): number {
     let value = index;
     for (let bit = 0; bit < 8; bit++) {
       value = value & 1 ? 0xedb88320 ^ (value >>> 1) : value >>> 1;

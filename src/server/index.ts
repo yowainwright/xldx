@@ -15,9 +15,9 @@ Xldx.prototype.toBuffer = async function (): Promise<Buffer> {
 };
 
 Xldx.prototype.write = async function (filePath: string): Promise<void> {
-  const buffer = await this.toBuffer();
+  const data = await this.toUint8Array();
   const fs = await import("fs/promises");
-  await fs.writeFile(filePath, buffer);
+  await fs.writeFile(filePath, data);
 };
 
 Xldx.prototype.download = async function (filename: string = "download.xlsx"): Promise<void> {

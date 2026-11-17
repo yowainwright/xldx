@@ -5,6 +5,22 @@ const EXPECTED_ARCHIVE =
   "504b0304140000000000000021588b9ed9d3010000000100000005000000612e74787441504b01021400140000000000000021588b9ed9d30100000001000000050000000000000000000000000000000000612e747874504b0506000000000100010033000000240000000000";
 
 it("preserves the original ZIP record bytes", testOriginalRecordBytes);
+it.each([
+  ["ASCII vector", "123456789", 0xcbf43926],
+  ["empty payload", "", 0],
+  ["offset view", new TextEncoder().encode("x123456789y").subarray(1, 10), 0xcbf43926],
+])("writes the independent CRC-32 for %s to both headers", (_, content, expected) => {
+  const zip = new MiniZip();
+  zip.addFile("data", content);
+  const bytes = zip.generate();
+  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const endOffset = bytes.length - 22;
+  const centralOffset = view.getUint32(endOffset + 16, true);
+  expect(view.getUint32(14, true)).toBe(expected);
+  expect(view.getUint32(centralOffset + 16, true)).toBe(expected);
+  const unzip = new MiniUnzip(bytes);
+  expect(unzip.getFile("data")).toBe(typeof content === "string" ? content : "123456789");
+});
 describe("MiniZip", testMiniZip);
 describe("MiniUnzip", testMiniUnzip);
 describe("MiniZip/MiniUnzip roundtrip", testMiniZipMiniUnzipRoundtrip);
