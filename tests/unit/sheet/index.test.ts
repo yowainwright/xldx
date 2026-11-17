@@ -10,6 +10,65 @@ import { describe, it, expect } from "bun:test";
 import { Sheet } from "../../../src/sheet/index";
 import type { ColumnDefinition, SheetOptions, DataRow } from "../../../src/index";
 describe("Sheet", testSheet);
+it("samples auto width before reading rows and reads plain cells once", testSampledPlainRows);
+it("preserves pattern callback order and source context", testPatternOrder);
+it("normalizes formulas in plain cells", testPlainFormula);
+
+function testPatternOrder() {
+  const events: unknown[][] = [];
+  const bgColorPattern = recordPattern("background", events);
+  const textPattern = recordPattern("text", events);
+  const custom = [recordPattern("custom", events)];
+  const patterns = { bgColorPattern, textPattern, custom };
+  const sheet = new Sheet([{ value: 10 }, { value: 20 }], [{ key: "value", patterns }], {
+    name: "Patterns",
+  });
+  expect(sheet.toWorksheetData().data).toEqual([["value"], [10], [20]]);
+  expect(events).toEqual([
+    ["background", 2, 10, undefined, true],
+    ["text", 2, 10, undefined, true],
+    ["custom", 2, 10, undefined, true],
+    ["background", 3, 20, 10, true],
+    ["text", 3, 20, 10, true],
+    ["custom", 3, 20, 10, true],
+  ]);
+}
+
+function recordPattern(name: string, events: unknown[][]): PatternFunction {
+  const pattern: PatternFunction = (context) => {
+    const { rowIndex, value, previousValue, rowData, allData } = context;
+    const source = rowData === allData[rowIndex - 2];
+    events[events.length] = [name, rowIndex, value, previousValue, source];
+    return null;
+  };
+  return pattern;
+}
+
+function testPlainFormula() {
+  const value = { formula: "2*3", result: 6 };
+  const data = [{ value }];
+  const sheet = new Sheet(data, [{ key: "value" }], { name: "Formula" });
+  expect(sheet.toWorksheetData().data).toEqual([["value"], [{ formula: "2*3", result: 6 }]]);
+  data[0].value.formula = "=2*3";
+  expect(() => sheet.toWorksheetData()).toThrow("Invalid formula value");
+}
+
+function testSampledPlainRows() {
+  let lastRowReads = 0;
+  const data = Array.from({ length: 101 }, (_, index) => ({
+    get value() {
+      if (index === 100) lastRowReads++;
+      const value = index === 100 ? "a much longer unsampled string" : "1234567890";
+      return value;
+    },
+  }));
+  const sheet = new Sheet(data, [{ key: "value", width: "auto" }], { name: "Sample" });
+  const result = sheet.toWorksheetData();
+  expect(result.columnWidths).toEqual([14]);
+  expect(result.data[101]).toEqual(["a much longer unsampled string"]);
+  expect(lastRowReads).toBe(1);
+}
+
 function testSheet() {
   describe("constructor and initialization", testConstructorAndInitialization);
   describe("getRowsData", testGetRowsData);

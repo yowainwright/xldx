@@ -190,10 +190,14 @@ The independent Excel fixture and its provenance are in `fixtures/formula/`.
 <!-- development commands matching package.json scripts and mise.toml -->
 
 Tool versions are pinned in `mise.toml` for local development and CI, including
-Bun 1.4.4, Node.js, and the native linters. Source, tests, scripts, and
+Bun 1.4.4, Node.js 26.7.0, and the native linters. Source, tests, scripts, and
 Oxlint/Oxfmt configurations are TypeScript. Native linters use their supported
 configuration formats: `.fs-lintrc`, `.src-lintrc`, `.legibilityrc`, and
 `mise.toml` for tool installation.
+
+Node benchmarks run TypeScript with extensionless imports using the installed
+`jiti/register` resolver. Browser benchmarks use real Playwright Chromium.
+Reports are written to `tmp/module-current/`; set `REPORT_DIR` to retain another run.
 
 <!-- workspace task orchestration from turbo.json and both package.json files -->
 Workspace build, test, typecheck, lint, format, and development commands run
@@ -227,6 +231,12 @@ bun run format:check
 
 # Type check
 bun run typecheck
+
+# Measure consumer bundles and export performance
+bun run size
+bun run benchmark:node
+bunx playwright install chromium
+bun run benchmark:browser
 
 # Dependency checks and updates
 bun run deps:check

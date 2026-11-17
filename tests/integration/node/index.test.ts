@@ -4,6 +4,20 @@ import { Xldx } from "../../../src/server/index";
 import * as fs from "fs/promises";
 import { mkdirSync, rmSync } from "node:fs";
 import * as path from "path";
+class OffsetArchive extends Xldx {
+  bufferCalls = 0;
+
+  override async toUint8Array(): Promise<Uint8Array<ArrayBuffer>> {
+    const bytes = Uint8Array.of(99, 80, 75, 88).subarray(1, 3);
+    return bytes;
+  }
+
+  override async toBuffer(): Promise<Buffer> {
+    this.bufferCalls++;
+    const buffer = await super.toBuffer();
+    return buffer;
+  }
+}
 const TEST_OUTPUT_DIR = path.join(import.meta.dir, "output");
 describe("Node.js Integration Tests", testNodeJsIntegrationTests);
 function testNodeJsIntegrationTests() {
@@ -153,6 +167,12 @@ function createLargeDatasetRow(index: number) {
 }
 function testToBuffer() {
   it("should return a valid Buffer", testReturnAValidBuffer);
+  it("copies only the visible bytes of an offset view", async () => {
+    const book = new OffsetArchive([]);
+    const buffer = await book.toBuffer();
+    expect(buffer).toBeInstanceOf(Buffer);
+    expect(Array.from(buffer)).toEqual([80, 75]);
+  });
 }
 async function testReturnAValidBuffer() {
   const xldx = new Xldx([{ a: 1 }]);
@@ -165,6 +185,21 @@ async function testReturnAValidBuffer() {
 }
 function testWriteMethod() {
   it("should write file to disk", testWriteFileToDisk);
+  it("writes only visible bytes without copying through toBuffer", testWriteOffset);
+  it("propagates write failures for an unavailable parent", testRejectWrite);
+}
+async function testWriteOffset() {
+  const book = new OffsetArchive([]);
+  const file = path.join(TEST_OUTPUT_DIR, "offset.xlsx");
+  await book.write(file);
+  const bytes = await fs.readFile(file);
+  expect(Array.from(bytes)).toEqual([80, 75]);
+  expect(book.bufferCalls).toBe(0);
+}
+async function testRejectWrite() {
+  const book = new OffsetArchive([]);
+  const file = path.join(TEST_OUTPUT_DIR, "absent", "archive.xlsx");
+  await expect(book.write(file)).rejects.toThrow("ENOENT");
 }
 async function testWriteFileToDisk() {
   const xldx = new Xldx([{ test: "value" }]);

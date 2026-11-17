@@ -97,12 +97,16 @@
     "deps:check": "codependence --noCache",
     "deps:security": "pastoralist --dry-run --checkSecurity --hasWorkspaceSecurityChecks --strict --quiet --no-cache",
     "deps:overrides": "pastoralist doctor --outputFormat json",
-    "update": "codependence --update && bun install"
+    "update": "codependence --update && bun install",
+    "benchmark:node": "node --import jiti/register scripts/benchmark/runner/index.ts",
+    "benchmark:browser": "bun build scripts/benchmark/index.ts --target browser --outfile tmp/module-bench/browser.js && node site/scripts/benchmark/index.ts tmp/module-bench/browser.js",
+    "size": "bun run build:pkg && bun scripts/size/index.ts"
   },
   "dependencies": {},
   "devDependencies": {
     "@types/bun": "1.4.4",
     "codependence": "^1.0.16",
+    "jiti": "2.7.0",
     "legibility": "0.0.1",
     "oxfmt": "0.78.0",
     "oxlint": "1.93.0",

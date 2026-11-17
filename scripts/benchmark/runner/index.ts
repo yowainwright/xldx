@@ -1,0 +1,20 @@
+import { log } from "node:console";
+import { execFileSync } from "node:child_process";
+import { mkdir, writeFile } from "node:fs/promises";
+import { resolve } from "node:path";
+import { runBenchmarks } from "../index";
+import { measureWrites } from "./utils";
+
+const results = await runBenchmarks();
+const writes = await measureWrites();
+const measurements = results.concat(writes);
+const revision = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+const exportRows = [1000, 10000];
+const { version: runtime } = process;
+const fixtures = { exportRows, exportColumns: 1, widthSample: 100, zipEntries: 1000 };
+const report = { revision, runtime, fixtures, warmups: 5, samples: 30, measurements };
+const directory = process.env.REPORT_DIR || "tmp/module-current";
+await mkdir(directory, { recursive: true });
+const json = JSON.stringify(report, null, 2);
+await writeFile(resolve(directory, "node.json"), json);
+log(json);

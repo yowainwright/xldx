@@ -1,4 +1,4 @@
-import { Formula, Xldx } from "../../src/index.js";
+import { Formula, Xldx } from "../../src/index";
 import type { Measurement, Workload } from "./types";
 
 export function workloads(): Workload[] {
@@ -10,17 +10,19 @@ export function workloads(): Workload[] {
   return all;
 }
 
-export async function measure(
+export async function measure<T>(
   workload: string,
   operation: string,
-  run: () => unknown,
+  run: () => T | Promise<T>,
+  validate?: (result: T) => void,
 ): Promise<Measurement> {
   for (let warmup = 0; warmup < 5; warmup++) await run();
   const times: number[] = [];
   for (let sample = 0; sample < 30; sample++) {
     const start = performance.now();
-    await run();
+    const result = await run();
     times[sample] = performance.now() - start;
+    validate?.(result);
   }
   const sorted = times.toSorted((left, right) => left - right);
   const medianMs = (sorted[14] + sorted[15]) / 2;
