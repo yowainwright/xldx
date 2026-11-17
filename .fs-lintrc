@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "newFiles": {
+    "default": "allow",
+    "allow": [
+      "!src/**",
+      "!tests/**",
+      "!test/**",
+      "src/**/{index,utils,types,constants}.ts",
+      "tests/{unit,integration,e2e}/*/{index,utils}.test.ts"
+    ]
+  }
+}

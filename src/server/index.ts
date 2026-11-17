@@ -1,6 +1,6 @@
-import { Xldx } from "../index";
+import { Xldx } from "../index.js";
 
-declare module "../index" {
+declare module "../index.js" {
   interface Xldx {
     toBuffer(): Promise<Buffer>;
     write(filePath: string): Promise<void>;
@@ -8,19 +8,20 @@ declare module "../index" {
   }
 }
 
-Xldx.prototype.toBuffer = async function(): Promise<Buffer> {
+Xldx.prototype.toBuffer = async function (): Promise<Buffer> {
   const uint8Array = await this.toUint8Array();
-  return Buffer.from(uint8Array);
+  const buffer = Buffer.from(uint8Array);
+  return buffer;
 };
 
-Xldx.prototype.write = async function(filePath: string): Promise<void> {
+Xldx.prototype.write = async function (filePath: string): Promise<void> {
   const buffer = await this.toBuffer();
-  const fs = await import('fs/promises');
+  const fs = await import("fs/promises");
   await fs.writeFile(filePath, buffer);
 };
 
-Xldx.prototype.download = async function(filename: string = 'download.xlsx'): Promise<void> {
+Xldx.prototype.download = async function (filename: string = "download.xlsx"): Promise<void> {
   await this.write(filename);
 };
 
-export * from "../index";
+export * from "../index.js";

@@ -1,0 +1,35 @@
+{
+  "source": "https://github.com/jmcnamara/XlsxWriter/blob/main/xlsxwriter/test/comparison/xlsx_files/formula_results01.xlsx",
+  "sourceGitBlob": "7b797f5f2988ff9fbc18dd530273b811ae07eff7",
+  "license": "BSD-2-Clause",
+  "licenseSource": "https://github.com/jmcnamara/XlsxWriter/blob/main/LICENSE.txt",
+  "copyright": "Copyright (c) 2013-2026 John McNamara",
+  "producer": "Microsoft Excel 12.0000 (docProps/app.xml)",
+  "originalSHA256": "e546faf310a765e7b4dd7bdb28c20846f9dd3123e109b2e287229e2f00315381",
+  "storedSHA256": "bba764eaed67128bb8cce8c8e65a8555956479b96493cf5615cd58eb03011e5b",
+  "repack": "Python 3.14.3 zipfile: copy each ZipInfo, set compress_type=ZIP_STORED, write original.read(filename); verify every uncompressed payload byte is unchanged",
+  "expected": {
+    "A1": {
+      "formula": "1+1",
+      "result": 2
+    },
+    "A2": {
+      "formula": "\"Foo\"",
+      "result": "Foo"
+    },
+    "A3": {
+      "formula": "IF(B3,FALSE,TRUE)",
+      "result": true
+    },
+    "A4": {
+      "formula": "IF(B4,TRUE,FALSE)",
+      "result": false
+    },
+    "A12": {
+      "formula": "1/0",
+      "result": {
+        "error": "#DIV/0!"
+      }
+    }
+  }
+}

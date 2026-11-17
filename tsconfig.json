@@ -1,11 +1,8 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
-    "outDir": "./dist",
-    "rootDir": "src",
+    "rootDir": ".",
     "allowSyntheticDefaultImports": true,
-    "declaration": true,
-    "emitDeclarationOnly": true,
+    "noEmit": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "lib": ["esnext", "dom"],
@@ -20,6 +17,6 @@
     "target": "esnext",
     "types": ["bun-types"]
   },
-  "include": ["src"],
-  "exclude": ["site/**/*", "dist", "test", "src/index-old.ts"]
+  "include": ["src", "tests", "scripts", "*.config.ts"],
+  "exclude": ["site", "dist", "node_modules"]
 }

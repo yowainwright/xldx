@@ -1,31 +1,40 @@
-import { XlsxWriter, XlsxReader } from "./xlsx";
-import { Sheet } from "./sheet";
+import { XlsxWriter, XlsxReader } from "./xlsx/index.js";
+import { Sheet } from "./sheet/index.js";
+import { calculateWorkbook } from "./formula/calculate/index.js";
+import type { Calculation } from "./formula/types.js";
 import type {
-  CellStyle,
   ColumnDefinition,
   SheetOptions,
   XldxOptions,
-  PatternFunction
-} from "./schemas";
-import type { ColorTheme } from "./themes";
-import type { DataRow, SheetsData, ColumnData, SheetDataAPI } from "./types";
-import { 
+  PatternFunction,
+} from "./schemas/index.js";
+import type { ColorTheme } from "./themes/index.js";
+import type { DataRow, SheetsData, ColumnData, SheetDataAPI, Workbook } from "./types.js";
+import {
   setTheme,
   zebraBg,
   bgColorBasedOnDiff,
   colorPerDiff,
   txtColorBasedOnDiff,
   createSetWidthBasedOnCharacterCount,
-  customizeInput
-} from "./utils";
+  customizeInput,
+} from "./utils.js";
 
-export * from "./schemas";
-export * from "./themes";
-export * from "./types";
-export { Sheet } from "./sheet";
+export * from "./schemas/index.js";
+export * from "./themes/index.js";
+export * from "./types.js";
+export { Sheet } from "./sheet/index.js";
+export { Formula } from "./formula/index.js";
+export type {
+  FormulaError,
+  FormulaResult,
+  FormulaValue,
+  FormulaIssue,
+  Calculation,
+  SpillRange,
+} from "./formula/types.js";
 
 export class Xldx {
-  protected writer: XlsxWriter;
   protected data: DataRow[] | SheetsData;
   protected customPatterns: Record<string, PatternFunction>;
   protected currentSheetData: DataRow[] = [];
@@ -35,22 +44,22 @@ export class Xldx {
   public readonly bgColorBasedOnDiff: PatternFunction;
   public readonly colorPerDiff: PatternFunction;
   public readonly txtColorBasedOnDiff: PatternFunction;
-  public readonly createSetWidthBasedOnCharacterCount = createSetWidthBasedOnCharacterCount.bind(this);
-  public readonly customizeInput = customizeInput.bind(this);
+  public readonly createSetWidthBasedOnCharacterCount = createSetWidthBasedOnCharacterCount;
+  public readonly customizeInput = customizeInput;
 
   constructor(data: DataRow[] | SheetsData, options: XldxOptions = {}) {
-    this.writer = new XlsxWriter();
     this.data = data;
     this.customPatterns = options.customPatterns || {};
 
-    if (!Array.isArray(data) && 'sheets' in data) {
+    const isMultiSheet = !Array.isArray(data) && "sheets" in data;
+    if (isMultiSheet) {
       this.buildSheetsFromData();
     }
 
-    this.zebraBg = zebraBg.bind(this);
-    this.bgColorBasedOnDiff = bgColorBasedOnDiff.bind(this);
-    this.colorPerDiff = colorPerDiff.bind(this);
-    this.txtColorBasedOnDiff = txtColorBasedOnDiff.bind(this);
+    this.zebraBg = zebraBg;
+    this.bgColorBasedOnDiff = bgColorBasedOnDiff;
+    this.colorPerDiff = colorPerDiff;
+    this.txtColorBasedOnDiff = txtColorBasedOnDiff;
   }
 
   setTheme(theme: ColorTheme): this {
@@ -66,148 +75,145 @@ export class Xldx {
     return definitions;
   }
 
-
   protected convertColumnDataToRows(columnData: ColumnData): DataRow[] {
     const columns = Object.keys(columnData);
-    const hasNoColumns = columns.length === 0;
-    if (hasNoColumns) return [];
-    
-    const rowCount = Math.max(...columns.map(col => columnData[col].length));
-    
-    return Array.from({ length: rowCount }, (_, i) =>
-      columns.reduce(
-        (row, col) => ({
-          ...row,
-          [col]: columnData[col][i] ?? null
-        }),
-        {} as DataRow
-      )
-    );
+    const hasColumns = columns.length > 0;
+    const empty: DataRow[] = [];
+    if (!hasColumns) return empty;
+
+    const rowCount = Math.max(...columns.map((col) => columnData[col].length));
+
+    const rows = Array.from({ length: rowCount }, (_, index) => {
+      const entries = columns.map((key) => [key, columnData[key][index] ?? null]);
+      const row: DataRow = Object.fromEntries(entries);
+      return row;
+    });
+    return rows;
   }
 
   protected buildSheetsFromData(): void {
-    const isNotMultiSheet = Array.isArray(this.data) || !('sheets' in this.data);
-    if (isNotMultiSheet) return;
+    const { data } = this;
+    const isMultiSheet = !Array.isArray(data) && "sheets" in data;
+    if (!isMultiSheet) return;
 
-    const sheetsData = this.data as SheetsData;
-    sheetsData.sheets.map((sheet) => {
+    data.sheets.forEach((sheet) => {
       const rows = this.convertColumnDataToRows(sheet.data);
       const columnKeys = Object.keys(sheet.data);
-      const columns: ColumnDefinition[] = columnKeys.map(key => ({
-        key,
-        header: key,
-        width: 'auto'
-      }));
+      const columns = this.createAutoColumns(columnKeys);
 
       this.currentSheetData = rows;
-      return this.createSheet({ name: sheet.name }, ...columns);
+      const { name } = sheet;
+      this.createSheet({ name }, ...columns);
     });
   }
 
+  protected createAutoColumns(keys: string[]): ColumnDefinition[] {
+    const columns: ColumnDefinition[] = keys.map((key) => ({ key, header: key, width: "auto" }));
+    return columns;
+  }
+
   createSheet(options: SheetOptions, ...columns: ColumnDefinition[]): this {
-    const isSingleSheetData = Array.isArray(this.data);
+    const { data } = this;
+    const isSingleSheetData = Array.isArray(data);
     if (isSingleSheetData) {
-      this.currentSheetData = this.data as DataRow[];
+      this.currentSheetData = data;
     }
-    
-    const sheet = new Sheet(
-      this.currentSheetData,
-      columns,
-      options,
-      this.customPatterns
-    );
-    
+
+    const sheet = new Sheet(this.currentSheetData, columns, options, this.customPatterns);
+
     this.sheets.set(options.name, sheet);
-    
-    const worksheetData = sheet.toWorksheetData();
-    this.writer.addWorksheet(
-      options.name, 
-      worksheetData.data, 
-      worksheetData.columnWidths || []
-    );
 
     return this;
   }
 
   createSheets(sheets: Array<{ options: SheetOptions; columns: ColumnDefinition[] }>): this {
-    sheets.map(({ options, columns }) => 
-      this.createSheet(options, ...columns)
-    );
+    sheets.forEach(({ options, columns }) => this.createSheet(options, ...columns));
     return this;
   }
 
-  async toUint8Array(): Promise<Uint8Array> {
-    return this.writer.generate();
+  async toUint8Array(): Promise<Uint8Array<ArrayBuffer>> {
+    const writer = new XlsxWriter();
+    const { sheets } = this.calculate().workbook;
+    sheets.forEach((sheet) => {
+      writer.addWorksheet(sheet.name, sheet.data, sheet.columnWidths, sheet.spills);
+    });
+    const data = writer.generate();
+    return data;
   }
 
-  toJSON(): any {
+  calculate(): Calculation {
+    const result = calculateWorkbook(this.toJSON());
+    return result;
+  }
+
+  toJSON(): Workbook {
     const worksheets = Array.from(this.sheets.entries()).map(([name, sheet]) => {
-      const data = sheet.toWorksheetData();
-      return {
-        name,
-        data: data.data,
-        columnWidths: data.columnWidths
-      };
+      const { data, columnWidths } = sheet.toWorksheetData();
+      const worksheet = { name, data, columnWidths };
+      return worksheet;
     });
-    
-    return { sheets: worksheets };
+
+    const workbook = { sheets: worksheets };
+    return workbook;
   }
 
   getSheetData(sheet: string | number): SheetDataAPI {
-    let sheetInstance: Sheet | undefined;
-    
-    const isStringIdentifier = typeof sheet === 'string';
-    if (isStringIdentifier) {
-      sheetInstance = this.sheets.get(sheet);
-    } else {
-      const sheetNames = Array.from(this.sheets.keys());
-      const hasSheetAtIndex = sheet >= 0 && sheet < sheetNames.length;
-      if (hasSheetAtIndex) {
-        sheetInstance = this.sheets.get(sheetNames[sheet]);
-      }
+    const instance = this.findSheet(sheet);
+    if (!instance) {
+      const isIndex = typeof sheet === "number";
+      const message = isIndex ? `Sheet at index ${sheet} not found` : `Sheet ${sheet} not found`;
+      throw new Error(message);
     }
-    
-    if (!sheetInstance) {
-      throw new Error(
-        typeof sheet === 'number'
-          ? `Sheet at index ${sheet} not found`
-          : `Sheet ${sheet} not found`
-      );
-    }
-
-    const instance = sheetInstance;
-    return {
-      getRowsData: () => instance.getRowsData(),
-      getColumnData: () => instance.getColumnData(),
-      getRowStyles: (rowIndex?: number) => instance.getRowStyles(rowIndex),
-      getColumnStyles: (columnKey?: string) => instance.getColumnStyles(columnKey),
-      updateRowStyles: (rowIndex: number, styles: CellStyle) =>
-        instance.updateRowStyles(rowIndex, styles),
-      updateColumnStyles: (columnKey: string, styles: CellStyle) =>
-        instance.updateColumnStyles(columnKey, styles),
-      updateRowData: (rowIndex: number, data: DataRow) =>
-        instance.updateRowData(rowIndex, data),
-      updateColumnData: (columnKey: string, data: unknown[]) =>
-        instance.updateColumnData(columnKey, data)
-    };
+    const api = this.createSheetAPI(instance);
+    return api;
   }
 
-  static async read(data: Uint8Array | Buffer): Promise<any> {
-    const uint8Array = data instanceof Buffer ? new Uint8Array(data) : data;
-    const reader = new XlsxReader(uint8Array);
-    return reader.read();
+  protected findSheet(sheet: string | number): Sheet | undefined {
+    const isName = typeof sheet === "string";
+    if (isName) {
+      const instance = this.sheets.get(sheet);
+      return instance;
+    }
+    const names = Array.from(this.sheets.keys());
+    const hasSheet = sheet >= 0 && sheet < names.length;
+    if (!hasSheet) return undefined;
+    const instance = this.sheets.get(names[sheet]);
+    return instance;
   }
 
-  static fromJSON(json: any): Xldx {
+  protected createSheetAPI(instance: Sheet): SheetDataAPI {
+    const getRowsData = instance.getRowsData.bind(instance);
+    const getColumnData = instance.getColumnData.bind(instance);
+    const getRowStyles = instance.getRowStyles.bind(instance);
+    const getColumnStyles = instance.getColumnStyles.bind(instance);
+    const updateRowStyles = instance.updateRowStyles.bind(instance);
+    const updateColumnStyles = instance.updateColumnStyles.bind(instance);
+    const updateRowData = instance.updateRowData.bind(instance);
+    const updateColumnData = instance.updateColumnData.bind(instance);
+    const updateCellData = instance.updateCellData.bind(instance);
+    const read = { getRowsData, getColumnData, getRowStyles, getColumnStyles };
+    const styles = { updateRowStyles, updateColumnStyles };
+    const write = { updateRowData, updateColumnData, updateCellData };
+    const api = Object.assign(read, styles, write);
+    return api;
+  }
+
+  static async read(data: Uint8Array): Promise<Workbook> {
+    const reader = new XlsxReader(data);
+    const workbook = reader.read();
+    return workbook;
+  }
+
+  static fromJSON(json: Partial<Workbook>): Xldx {
     const xldx = new Xldx([]);
-    
-    const hasSheets = json.sheets;
-    if (hasSheets) {
-      json.sheets.map((sheet: any) => {
-        xldx.writer.addWorksheet(sheet.name, sheet.data, sheet.columnWidths);
+
+    if (json.sheets) {
+      json.sheets.forEach((sheet) => {
+        const restored = Sheet.fromWorksheet(sheet);
+        xldx.sheets.set(sheet.name, restored);
       });
     }
-    
+
     return xldx;
   }
 }

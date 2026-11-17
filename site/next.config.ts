@@ -4,11 +4,11 @@ import createMDX from "@next/mdx";
 const nextConfig: NextConfig = {
   output: "export",
   basePath: "/xldx",
+  trailingSlash: true,
   images: {
     unoptimized: true,
   },
   pageExtensions: ["js", "jsx", "ts", "tsx", "md", "mdx"],
-  turbopack: {},
 };
 
 const withMDX = createMDX({});

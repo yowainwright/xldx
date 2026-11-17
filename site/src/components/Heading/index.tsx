@@ -11,7 +11,7 @@ export function Heading({ level, id, children }: HeadingProps) {
       {id && (
         <a
           href={`#${id}`}
-          className="ml-2 text-zinc-400 opacity-0 transition-opacity hover:text-zinc-600 group-hover:opacity-100"
+          className="ml-2 text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
           aria-label={`Link to ${id}`}
         >
           #

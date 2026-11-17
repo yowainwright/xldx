@@ -45,14 +45,14 @@ export function usePlayground() {
     (newData: Record<string, unknown>[]) => {
       updateState({ data: newData });
     },
-    [updateState]
+    [updateState],
   );
 
   const setColumns = useCallback(
     (newColumns: Column[]) => {
       updateState({ columns: newColumns });
     },
-    [updateState]
+    [updateState],
   );
 
   const handleDownload = useCallback(async () => {
@@ -85,7 +85,7 @@ export function usePlayground() {
         // Invalid JSON, ignore
       }
     },
-    [updateState]
+    [updateState],
   );
 
   return {

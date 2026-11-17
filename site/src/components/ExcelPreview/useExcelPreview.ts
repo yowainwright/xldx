@@ -17,30 +17,28 @@ export function useExcelPreview({
   const handleCellChange = useCallback(
     (rowIndex: number, colKey: string, value: string) => {
       if (!onDataChange) return;
-      const newData = data.map((row, i) =>
-        i === rowIndex ? { ...row, [colKey]: value } : row
-      );
+      const newData = data.map((row, i) => (i === rowIndex ? { ...row, [colKey]: value } : row));
       onDataChange(newData);
     },
-    [data, onDataChange]
+    [data, onDataChange],
   );
 
   const handleHeaderChange = useCallback(
     (colIndex: number, value: string) => {
       if (!onColumnsChange) return;
       const newColumns = columns.map((col, i) =>
-        i === colIndex ? { ...col, header: value } : col
+        i === colIndex ? { ...col, header: value } : col,
       );
       onColumnsChange(newColumns);
     },
-    [columns, onColumnsChange]
+    [columns, onColumnsChange],
   );
 
   const handleAddRow = useCallback(() => {
     if (!onDataChange) return;
     const newRow = columns.reduce(
       (acc, col) => ({ ...acc, [col.key]: "" }),
-      {} as Record<string, unknown>
+      {} as Record<string, unknown>,
     );
     onDataChange([...data, newRow]);
   }, [data, columns, onDataChange]);

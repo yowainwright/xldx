@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "strict": true,
+  "boundaries": {
+    "xldx": {
+      "root": "src",
+      "public": ["index.ts", "browser/index.ts", "server/index.ts"]
+    },
+    "tests": { "root": "tests", "allow": ["src/**"] },
+    "site": { "root": "site" }
+  }
+}

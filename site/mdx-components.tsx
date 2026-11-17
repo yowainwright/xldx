@@ -1,10 +1,12 @@
 import type { MDXComponents } from "mdx/types";
 import { CodeBlock } from "@/components/CodeBlock";
 import { Callout } from "@/components/Callout";
+import { Link } from "@/components/Link";
 
 export function useMDXComponents(components: MDXComponents): MDXComponents {
   return {
     ...components,
+    a: Link,
     pre: ({ children }) => {
       const codeElement = children as React.ReactElement<{
         className?: string;
