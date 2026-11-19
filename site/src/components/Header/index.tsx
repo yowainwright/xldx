@@ -1,49 +1,82 @@
 "use client";
 
 import NextLink from "next/link";
-import { GitBranch } from "lucide-react";
+import { GitBranch, Table2 } from "lucide-react";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { normalizeDocPath } from "../Sidebar/utils";
 import { NAV_ITEMS, GITHUB_URL } from "./constants";
-import type { HeaderProps } from "./types";
+import type { HeaderProps, NavItem } from "./types";
 
 export function Header({ children }: HeaderProps) {
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-sm">
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-4">
+    <header className="sticky top-0 z-50 w-full shrink-0 border-b bg-background/95 backdrop-blur">
+      <div className="flex h-16 w-full items-center justify-between gap-2 px-3 sm:gap-4 sm:px-4 md:px-6">
+        <div className="flex items-center gap-2 sm:gap-3">
           {children}
-
-          <NextLink href="/" className="flex items-center gap-2">
-            <span className="text-xl font-bold text-foreground">xldx</span>
-          </NextLink>
+          <Brand />
         </div>
-
-        <nav aria-label="Main navigation" className="flex items-center gap-3 sm:gap-6">
-          {NAV_ITEMS.map((item) => (
-            <NextLink
-              key={item.href}
-              href={item.href}
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              {...(item.href.startsWith("http")
-                ? { target: "_blank", rel: "noopener noreferrer" }
-                : {})}
-            >
-              {item.label}
-            </NextLink>
-          ))}
-        </nav>
-
-        <div className="flex items-center gap-2">
-          <ThemeToggle />
-          <Button variant="ghost" size="icon" asChild>
-            <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-              <GitBranch className="h-5 w-5" />
-            </a>
-          </Button>
+        <div className="flex items-center gap-2 sm:gap-7">
+          <Navigation />
+          <HeaderActions />
         </div>
       </div>
     </header>
+  );
+}
+
+function Brand() {
+  return (
+    <NextLink href="/" aria-label="xldx home" className="flex items-center gap-2.5">
+      <span className="hidden size-8 items-center justify-center rounded-lg border bg-muted/40 sm:flex">
+        <Table2 className="size-4" aria-hidden="true" />
+      </span>
+      <span className="font-mono text-xl font-semibold tracking-tight">xldx</span>
+    </NextLink>
+  );
+}
+
+function Navigation() {
+  const route = usePathname();
+  const pathname = normalizeDocPath(route);
+  const links = NAV_ITEMS.map((item) => (
+    <NavigationLink key={item.href} item={item} pathname={pathname} />
+  ));
+  return (
+    <nav
+      aria-label="Main navigation"
+      className="flex items-center gap-2 text-xs font-medium sm:gap-6 sm:text-sm"
+    >
+      {links}
+    </nav>
+  );
+}
+
+function NavigationLink({ item, pathname }: { item: NavItem; pathname: string }) {
+  const docsLink = item.href === "/docs";
+  const exact = pathname === item.href;
+  const docsChild = docsLink && pathname.startsWith("/docs/");
+  const active = exact || docsChild;
+  const current = exact ? "page" : undefined;
+  const className = active ? "text-foreground" : "text-muted-foreground hover:text-foreground";
+  return (
+    <NextLink href={item.href} aria-current={current} className={className}>
+      {item.label}
+    </NextLink>
+  );
+}
+
+function HeaderActions() {
+  return (
+    <div className="flex items-center gap-1 border-l pl-2 sm:pl-5">
+      <ThemeToggle />
+      <Button variant="ghost" size="icon" asChild>
+        <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+          <GitBranch className="size-4" />
+        </a>
+      </Button>
+    </div>
   );
 }
 
