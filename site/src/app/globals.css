@@ -130,27 +130,18 @@
 
 @layer components {
   .docs-content {
-    line-height: 1.8;
-    overflow-wrap: anywhere;
+    @apply text-sm leading-7 text-foreground/85 sm:text-[15px];
+    overflow-wrap: break-word;
   }
   .docs-content h1 {
-    margin-bottom: 1rem;
-    font-size: 2.25rem;
-    font-weight: 700;
-    line-height: 1.2;
-    letter-spacing: -0.03em;
+    @apply mb-5 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl;
+    line-height: 1.15;
   }
   .docs-content h2 {
-    margin: 2.5rem 0 1rem;
-    border-bottom: 1px solid var(--border);
-    padding-bottom: 0.5rem;
-    font-size: 1.5rem;
-    font-weight: 600;
+    @apply mb-4 mt-12 scroll-mt-24 text-xl font-semibold tracking-tight text-foreground;
   }
   .docs-content h3 {
-    margin: 1.5rem 0 0.75rem;
-    font-size: 1.125rem;
-    font-weight: 600;
+    @apply mb-3 mt-8 scroll-mt-24 text-base font-semibold text-foreground;
   }
   .docs-content p,
   .docs-content ul,
@@ -166,9 +157,7 @@
     list-style: decimal;
   }
   .docs-content a {
-    color: var(--primary);
-    text-decoration: underline;
-    text-underline-offset: 3px;
+    @apply font-medium text-foreground underline decoration-border underline-offset-4 transition-colors hover:decoration-foreground;
   }
   .docs-content :not(pre) > code {
     border-radius: 0.25rem;
